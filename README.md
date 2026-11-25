@@ -27,11 +27,20 @@ Die Abfragen nutzen gespeicherte **Notion-Ansichten** (View-Modus), nicht SQL: S
 | Kennzahlen | Wochentabelle; leere Felder erscheinen als „k. A.“ (unbekannt, nicht null) |
 | Routinen | Wiederkehrende Abläufe mit Rhythmus und nächster Aktion |
 
-## Aufgaben bearbeiten
+## Bearbeiten
 
-Jede Aufgabenkarte hat „Bearbeiten“ und „Erledigt“, dazu gibt es „Neue Aufgabe“ in Übersicht und Aufgaben. Gespeichert wird direkt in Notion über den Notion-Connector der Person, die das Dashboard geöffnet hat (`notion-update-page`, `notion-create-pages`), und nur auf Knopfdruck. Beim Bearbeiten werden nur geänderte Felder gesendet. „Archivieren“ setzt das Feld „Archiviert“ nach einer Rückfrage; nichts wird gelöscht.
+Ein Klick auf eine Aufgabe, ein Projekt, einen Beitrag, eine Kennzahlen-Woche oder eine Routine öffnet das Bearbeiten-Menü. „In Notion öffnen“ steht oben im Menü.
 
-Bearbeitbar: Titel, Status, Priorität, Deadline, Entität, Projekt (Projekt-Verknüpfung), Nächster Schritt, Fertigkriterium und optional „Letzter Fortschritt“ = heute (bei Statuswechsel vorausgewählt).
+- **Ändern:** alle Felder des Eintrags, bei Kennzahlen die Wochenzahlen (leer = unbekannt, nicht 0). Gesendet werden nur geänderte Felder.
+- **Anlegen:** „Neue Aufgabe“, „Neues Projekt“, „Neuer Beitrag“, „Neue Woche“, „Neue Routine“; im Projekt-Menü „Neue Aufgabe in diesem Projekt“.
+- **Archivieren** (Aufgaben, Projekte) setzt „Archiviert“. **Löschen** verschiebt den Eintrag in den Notion-Papierkorb (wiederherstellbar). Beides erst nach einer Rückfrage.
+- **Erledigt** auf offenen Aufgabenkarten setzt Status und „Letzter Fortschritt“ in einem Schritt.
+
+Geschrieben wird über den Notion-Connector der Person, die das Dashboard geöffnet hat (`notion-update-page`, `notion-create-pages`, `notion-delete-pages`), nur auf Knopfdruck. Die Felder des Menüs stehen in `tools/editor_spec.py`; `python3 tools/build_editor.py` erzeugt daraus Dialog und Konfiguration in `index.html`.
+
+## Kacheln
+
+Die Kennzahlen-Kacheln oben sind antippbar und zeigen darunter die Einträge dahinter: offene, MUSS-, überfällige und in 7 Tagen fällige Aufgaben, aktive Projekte und die Zahlen der jüngsten Woche (mit „Zahlen dieser Woche eintragen“).
 
 ## Aufbau
 
@@ -42,6 +51,9 @@ dashboard/
     dash.meta.json           Titel und Sprache
     datasets.<id>.json       Live-Abfragen (Notion-Ansicht im View-Modus) je Datenbank
 tools/
+  editor_spec.py             Felder des Bearbeiten-Menüs je Datenbank
+  build_editor.py            schreibt Dialog und Editor-Konfiguration in index.html
+  editor.js                  Quelle des Editor-Skripts (in index.html eingebettet)
   pack-page.py               packt index.html als {"text": …} für den Upload
 ```
 

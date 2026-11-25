@@ -44,6 +44,29 @@
     font-variant-numeric: tabular-nums; min-height: 1.1em;
   }
   .cc-kpi-note { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); line-height: 1.4; }
+  button.cc-kpi { font: inherit; color: inherit; text-align: left; cursor: pointer; width: 100%; }
+  button.cc-kpi:hover { border-color: var(--color-fg-muted); }
+  button.cc-kpi[aria-expanded="true"] { border-color: var(--color-fg); box-shadow: inset 0 0 0 1px var(--color-fg); }
+  .cc-detail {
+    display: grid; gap: var(--cds-gap-md); background: var(--color-panel); border: 1px solid var(--color-border-line);
+    border-radius: var(--cds-radius); padding: var(--cds-pad-md) var(--cds-pad-lg); margin-top: calc(-1 * var(--cds-gap-md));
+  }
+  .cc-kv { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 180px), 1fr)); gap: var(--cds-gap-sm) var(--cds-gap-lg); margin: 0; }
+  .cc-kv > div { display: grid; gap: 2px; min-width: 0; }
+  .cc-kv dt { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .cc-kv dd { margin: 0; font-variant-numeric: tabular-nums; font-weight: var(--cds-font-weight-medium); }
+  .cc-open {
+    appearance: none; background: none; border: 0; padding: 0; margin: 0; font: inherit; color: inherit;
+    text-align: left; cursor: pointer; font-weight: var(--cds-font-weight-medium); line-height: 1.35; overflow-wrap: anywhere;
+  }
+  .cc-open:hover { text-decoration: underline; text-underline-offset: 2px; }
+  .cc-dialog-head { display: flex; justify-content: space-between; align-items: baseline; gap: var(--cds-gap-md); flex-wrap: wrap; }
+  .cc-notion-link { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); text-decoration: underline !important; }
+  .cc-wide { grid-column: 1 / -1; }
+  .cc-multi { border: 0; padding: 0; margin: 0; }
+  .cc-multi legend { padding: 0; margin-bottom: 4px; }
+  .cc-checks { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs) var(--cds-gap-md); }
+  .cc-sublist { display: grid; gap: var(--cds-gap-sm); border-top: 1px solid var(--color-border-line); padding-top: var(--cds-pad-md); }
   .cc-kpi.is-bad .cc-kpi-value { color: var(--color-bad); }
   .cc-kpi.is-warn .cc-kpi-value { color: var(--color-warn); }
   .is-unknown { color: var(--color-fg-muted); }
@@ -220,7 +243,7 @@
   .cc-msg.is-bad { color: var(--color-bad); }
   .cc-msg.is-wait { color: var(--color-fg-muted); }
   .cc-dialog {
-    width: min(560px, calc(100vw - 32px)); max-height: calc(100vh - 48px); overflow: auto;
+    width: min(640px, calc(100vw - 32px)); max-height: calc(100vh - 48px); overflow: auto;
     background: var(--color-bg); color: var(--color-fg); border: 1px solid var(--color-border-line);
     border-radius: var(--cds-radius); padding: var(--cds-pad-lg); box-shadow: var(--cds-shadow-popover);
   }
@@ -262,36 +285,55 @@
   </header>
 
   <section class="cc-kpis" id="kennzahlen-leiste" aria-label="Kennzahlen" data-fetchpriority="high">
-    <div class="cc-kpi" id="kpi-offen">
+    <button type="button" class="cc-kpi" id="kpi-offen" data-kachel="offen" aria-expanded="false" aria-controls="kachel-detail">
       <span class="cc-kpi-label">Offene Aufgaben</span>
       <span class="cc-kpi-value dash-skeleton" data-draw="kpi" data-source="kpis" data-field="offen" data-row="0">—</span>
       <span class="cc-kpi-note">Offen, In Arbeit, Blockiert</span>
-    </div>
-    <div class="cc-kpi" id="kpi-muss" data-alert="warn">
+    </button>
+    <button type="button" class="cc-kpi" id="kpi-muss" data-kachel="muss" aria-expanded="false" aria-controls="kachel-detail" data-alert="warn">
       <span class="cc-kpi-label">MUSS offen</span>
       <span class="cc-kpi-value dash-skeleton" data-draw="kpi" data-source="kpis" data-field="muss_offen" data-row="0">—</span>
       <span class="cc-kpi-note">Ziel: eine MUSS pro Tag</span>
-    </div>
-    <div class="cc-kpi" id="kpi-ueberfaellig" data-alert="bad">
+    </button>
+    <button type="button" class="cc-kpi" id="kpi-ueberfaellig" data-kachel="ueberfaellig" aria-expanded="false" aria-controls="kachel-detail" data-alert="bad">
       <span class="cc-kpi-label">Überfällig</span>
       <span class="cc-kpi-value dash-skeleton" data-draw="kpi" data-source="kpis" data-field="ueberfaellig" data-row="0">—</span>
       <span class="cc-kpi-note">Deadline vor heute</span>
-    </div>
-    <div class="cc-kpi" id="kpi-woche">
+    </button>
+    <button type="button" class="cc-kpi" id="kpi-woche" data-kachel="woche" aria-expanded="false" aria-controls="kachel-detail">
       <span class="cc-kpi-label">Fällig in 7 Tagen</span>
       <span class="cc-kpi-value dash-skeleton" data-draw="kpi" data-source="kpis" data-field="faellig_7" data-row="0">—</span>
       <span class="cc-kpi-note">davon heute <b data-draw="kpi" data-source="kpis" data-field="heute_faellig" data-row="0">—</b></span>
-    </div>
-    <div class="cc-kpi" id="kpi-projekte">
+    </button>
+    <button type="button" class="cc-kpi" id="kpi-projekte" data-kachel="projekte" aria-expanded="false" aria-controls="kachel-detail">
       <span class="cc-kpi-label">Aktive Projekte</span>
       <span class="cc-kpi-value dash-skeleton" data-draw="kpi" data-source="kpis" data-field="projekte_aktiv" data-row="0">—</span>
       <span class="cc-kpi-note"><b data-draw="kpi" data-source="kpis" data-field="projekte_still" data-row="0">—</b> davon seit über 7 Tagen ohne Fortschritt</span>
-    </div>
-    <div class="cc-kpi" id="kpi-umsatz">
+    </button>
+    <button type="button" class="cc-kpi" id="kpi-umsatz" data-kachel="umsatz" aria-expanded="false" aria-controls="kachel-detail">
       <span class="cc-kpi-label">Umsatz gebucht · <span data-draw="kz" data-source="kennzahlen" data-field="zeitraum" data-row="0">—</span></span>
       <span class="cc-kpi-value dash-skeleton" data-draw="kz" data-format="eur" data-source="kennzahlen" data-field="umsatz_gebucht" data-row="0">—</span>
       <span class="cc-kpi-note">Coaching-Buchungen: <b data-draw="kz" data-source="kennzahlen" data-field="coaching_buchungen" data-row="0">—</b></span>
+    </button>
+  </section>
+
+  <section class="cc-detail" id="kachel-detail" hidden>
+    <div class="cc-block-head">
+      <h2 class="cc-h2" data-kachel-titel="offen" hidden>Offene Aufgaben</h2>
+      <h2 class="cc-h2" data-kachel-titel="muss" hidden>Offene MUSS-Aufgaben</h2>
+      <h2 class="cc-h2" data-kachel-titel="ueberfaellig" hidden>Überfällige Aufgaben</h2>
+      <h2 class="cc-h2" data-kachel-titel="woche" hidden>Fällig in den nächsten 7 Tagen</h2>
+      <h2 class="cc-h2" data-kachel-titel="projekte" hidden>Aktive Projekte</h2>
+      <h2 class="cc-h2" data-kachel-titel="umsatz" hidden>Kennzahlen der jüngsten Woche</h2>
+      <div class="cc-meta">
+        <button type="button" class="cc-btn is-primary" data-new="aufgabe" data-kachel-aktion="offen muss ueberfaellig woche" hidden>Neue Aufgabe</button>
+        <button type="button" class="cc-btn is-primary" data-new="projekt" data-kachel-aktion="projekte" hidden>Neues Projekt</button>
+        <button type="button" class="cc-btn is-primary" id="kachel-woche-eintragen" data-kachel-aktion="umsatz" hidden>Zahlen dieser Woche eintragen</button>
+        <button type="button" class="cc-btn is-primary" data-new="kennzahl" data-kachel-aktion="umsatz" hidden>Neue Woche</button>
+        <button type="button" class="cc-btn" id="kachel-zu">Schließen</button>
+      </div>
     </div>
+    <ul class="cc-list" data-draw="kachel-liste" data-source="aufgaben projekte projektstand kennzahlen"></ul>
   </section>
 
   <nav class="cc-tabs" role="tablist" aria-label="Ansichten">
@@ -305,10 +347,12 @@
 
   <div class="cc-msgs" id="speicherstatus" role="status" aria-live="polite">
     <p class="cc-msg is-wait" data-msg="saving" hidden>Wird in Notion gespeichert …</p>
-    <p class="cc-msg is-ok" data-msg="saved" hidden>In Notion gespeichert. Die Aufgaben werden neu geladen.</p>
+    <p class="cc-msg is-ok" data-msg="saved" hidden>In Notion gespeichert. Die Daten werden neu geladen.</p>
     <p class="cc-msg is-bad" data-msg="approval" hidden>Speichern braucht deine Freigabe für den Notion-Connector. Öffne das Dashboard in claude.ai und erlaube den Zugriff, wenn danach gefragt wird.</p>
     <p class="cc-msg is-bad" data-msg="reconnect" hidden>Der Notion-Connector ist nicht verbunden oder abgelaufen. Verbinde Notion in claude.ai unter Einstellungen › Connectors neu.</p>
     <p class="cc-msg is-bad" data-msg="nomcp" hidden>In dieser Ansicht kann das Dashboard nicht in Notion schreiben. Öffne es in claude.ai.</p>
+    <p class="cc-msg is-ok" data-msg="archived" hidden>Archiviert. Die Daten werden neu geladen.</p>
+    <p class="cc-msg is-ok" data-msg="deleted" hidden>In den Notion-Papierkorb verschoben. Dort lässt sich der Eintrag wiederherstellen.</p>
     <p class="cc-msg is-bad" data-msg="error" hidden>Notion hat die Änderung nicht übernommen: <span data-draw="save-detail"></span></p>
   </div>
 
@@ -318,7 +362,7 @@
       <div class="cc-block" id="fokus">
         <div class="cc-block-head">
           <h2 class="cc-h2">Fokus</h2>
-          <button type="button" class="cc-btn" data-new-task>Neue Aufgabe</button>
+          <button type="button" class="cc-btn" data-new="aufgabe">Neue Aufgabe</button>
           <p class="cc-sub" style="flex-basis: 100%">Offene MUSS-Aufgaben und alles, was bis morgen fällig ist</p>
         </div>
         <ul class="cc-list dash-skeleton" data-draw="fokus" data-source="aufgaben"></ul>
@@ -366,7 +410,7 @@
         <option value="KANN">KANN</option>
       </select>
       <button type="button" class="cc-btn" id="f-reset">Filter zurücksetzen</button>
-      <button type="button" class="cc-btn is-primary" data-new-task>Neue Aufgabe</button>
+      <button type="button" class="cc-btn is-primary" data-new="aufgabe">Neue Aufgabe</button>
     </div>
     <div class="cc-board" id="board">
       <section class="cc-col" id="spalte-offen">
@@ -394,7 +438,10 @@
 
   <!-- Projekte -->
   <section class="cc-panel" id="projekte" role="tabpanel" aria-labelledby="tab-projekte" hidden>
-    <p class="cc-sub">Aktive, geplante und blockierte Projekte nach Bereich. Der Balken zählt die verknüpften Aufgaben ohne geparkte.</p>
+    <div class="cc-block-head">
+      <p class="cc-sub">Aktive, geplante und blockierte Projekte nach Bereich. Der Balken zählt die verknüpften Aufgaben ohne geparkte.</p>
+      <button type="button" class="cc-btn is-primary" data-new="projekt">Neues Projekt</button>
+    </div>
     <div class="cc-block dash-skeleton" data-draw="projekte" data-source="projekte projektstand" style="min-height: 10rem"></div>
     <details class="cc-details" id="projekte-zu">
       <summary>Abgeschlossene und geparkte Projekte</summary>
@@ -405,7 +452,10 @@
   <!-- Content -->
   <section class="cc-panel" id="content" role="tabpanel" aria-labelledby="tab-content" hidden>
     <div class="cc-block" id="pipeline">
-      <h2 class="cc-h2">Pipeline</h2>
+      <div class="cc-block-head">
+        <h2 class="cc-h2">Pipeline</h2>
+        <button type="button" class="cc-btn is-primary" data-new="content">Neuer Beitrag</button>
+      </div>
       <div class="cc-pipe">
         <div><span class="cc-pipe-n" data-draw="cstat" data-source="contentstatus" data-field="n" data-where="status=Idee">—</span><span class="cc-pipe-l">Idee</span></div>
         <div><span class="cc-pipe-n" data-draw="cstat" data-source="contentstatus" data-field="n" data-where="status=In Produktion">—</span><span class="cc-pipe-l">In Produktion</span></div>
@@ -444,7 +494,10 @@
 
   <!-- Kennzahlen -->
   <section class="cc-panel" id="kennzahlen" role="tabpanel" aria-labelledby="tab-kennzahlen" hidden>
-    <p class="cc-sub">Wochenwerte aus der Notion-Datenbank „Kennzahlen“. „k. A.“ heißt: nicht erhoben, nicht null.</p>
+    <div class="cc-block-head">
+      <p class="cc-sub">Wochenwerte aus der Notion-Datenbank „Kennzahlen“. „k. A.“ heißt: nicht erhoben, nicht null. Ein Klick auf den Zeitraum öffnet die Woche zum Eintragen.</p>
+      <button type="button" class="cc-btn is-primary" data-new="kennzahl">Neue Woche</button>
+    </div>
     <div class="cc-tablewrap">
       <table class="cc-table" data-source="kennzahlen" data-row-key="stichtag">
         <thead>
@@ -477,71 +530,38 @@
 
   <!-- Routinen -->
   <section class="cc-panel" id="routinen" role="tabpanel" aria-labelledby="tab-routinen" hidden>
+    <div class="cc-block-head">
+      <p class="cc-sub">Wiederkehrende Abläufe aus der Notion-Datenbank „Routinen“.</p>
+      <button type="button" class="cc-btn is-primary" data-new="routine">Neue Routine</button>
+    </div>
     <ul class="cc-grid cc-list dash-skeleton" data-draw="routinen" data-source="routinen"></ul>
   </section>
 
-  <p class="cc-foot">Daten live aus Notion (Control Centre). Titel öffnen die Seite in Notion; Änderungen dort erscheinen hier beim nächsten Laden. Aufgaben, die du hier bearbeitest, werden direkt in Notion gespeichert.</p>
+  <p class="cc-foot">Daten live aus Notion (Control Centre). Ein Klick auf einen Eintrag öffnet das Bearbeiten-Menü; gespeichert wird direkt in Notion. Änderungen in Notion erscheinen hier beim nächsten Laden.</p>
 
   <template id="tpl-aufgabe-aktionen">
     <div class="cc-actions">
-      <button type="button" class="cc-act" data-act="edit">Bearbeiten</button>
       <button type="button" class="cc-act" data-act="done">Erledigt</button>
     </div>
   </template>
 
-  <dialog class="cc-dialog" id="aufgabe-dialog" aria-label="Aufgabe bearbeiten">
-    <form class="cc-form" id="aufgabe-form" novalidate>
-      <h2 class="cc-h2" data-mode="edit">Aufgabe bearbeiten</h2>
-      <h2 class="cc-h2" data-mode="new" hidden>Neue Aufgabe</h2>
-      <label class="cc-field" for="fld-name">Titel
-        <input class="cc-input" id="fld-name" type="text" required maxlength="300" autocomplete="off">
-      </label>
-      <div class="cc-form-grid">
-        <label class="cc-field" for="fld-status">Status
-          <select class="dash-select" id="fld-status">
-            <option value="Offen">Offen</option>
-            <option value="In Arbeit">In Arbeit</option>
-            <option value="Blockiert">Blockiert</option>
-            <option value="Erledigt">Erledigt</option>
-            <option value="Geparkt">Geparkt</option>
-          </select>
-        </label>
-        <label class="cc-field" for="fld-prio">Priorität
-          <select class="dash-select" id="fld-prio">
-            <option value="">keine</option>
-            <option value="MUSS">MUSS</option>
-            <option value="SOLL">SOLL</option>
-            <option value="KANN">KANN</option>
-          </select>
-        </label>
-        <label class="cc-field" for="fld-deadline">Deadline
-          <input class="cc-input" id="fld-deadline" type="date" min="2020-01-01" max="2035-12-31">
-        </label>
-        <label class="cc-field" for="fld-entitaet">Entität
-          <select class="dash-select" id="fld-entitaet">
-            <option value="">keine</option>
-            <option value="MMT UG">MMT UG</option>
-            <option value="Persönliche Marke">Persönliche Marke</option>
-            <option value="Side-Projects">Side-Projects</option>
-          </select>
-        </label>
+  <!-- editor:start -->
+  <dialog class="cc-dialog" id="editor" aria-label="Eintrag bearbeiten">
+    <form class="cc-form" id="editor-form" novalidate>
+      <div class="cc-dialog-head">
+        <div><h2 class="cc-h2" data-type="aufgabe" data-mode="edit" hidden>Aufgabe bearbeiten</h2><h2 class="cc-h2" data-type="aufgabe" data-mode="new" hidden>Neue Aufgabe</h2><h2 class="cc-h2" data-type="projekt" data-mode="edit" hidden>Projekt bearbeiten</h2><h2 class="cc-h2" data-type="projekt" data-mode="new" hidden>Neues Projekt</h2><h2 class="cc-h2" data-type="content" data-mode="edit" hidden>Beitrag bearbeiten</h2><h2 class="cc-h2" data-type="content" data-mode="new" hidden>Neuer Beitrag</h2><h2 class="cc-h2" data-type="kennzahl" data-mode="edit" hidden>Kennzahlen-Woche bearbeiten</h2><h2 class="cc-h2" data-type="kennzahl" data-mode="new" hidden>Neue Kennzahlen-Woche</h2><h2 class="cc-h2" data-type="routine" data-mode="edit" hidden>Routine bearbeiten</h2><h2 class="cc-h2" data-type="routine" data-mode="new" hidden>Neue Routine</h2></div>
+        <span data-draw="editor-notion-link"></span>
       </div>
-      <label class="cc-field" for="fld-projekt">Projekt
-        <select class="dash-select" id="fld-projekt" data-draw="projekt-optionen" data-source="projekte"></select>
-      </label>
-      <label class="cc-field" for="fld-next">Nächster Schritt
-        <textarea class="cc-input" id="fld-next" rows="3"></textarea>
-      </label>
-      <label class="cc-field" for="fld-fertig">Fertigkriterium
-        <textarea class="cc-input" id="fld-fertig" rows="2"></textarea>
-      </label>
-      <label class="cc-check" for="fld-fortschritt"><input type="checkbox" id="fld-fortschritt"> „Letzter Fortschritt“ auf heute setzen</label>
+      <div class="cc-form-grid" data-type="aufgabe" hidden><label class="cc-field cc-wide" for="a-name">Titel<input class="cc-input" id="a-name" type="text" maxlength="500" autocomplete="off"></label><label class="cc-field" for="a-status">Status<select class="dash-select" id="a-status"><option value="Offen">Offen</option><option value="In Arbeit">In Arbeit</option><option value="Blockiert">Blockiert</option><option value="Erledigt">Erledigt</option><option value="Geparkt">Geparkt</option></select></label><label class="cc-field" for="a-prio">Priorität<select class="dash-select" id="a-prio"><option value="">keine Angabe</option><option value="MUSS">MUSS</option><option value="SOLL">SOLL</option><option value="KANN">KANN</option></select></label><label class="cc-field" for="a-deadline">Deadline<input class="cc-input" id="a-deadline" type="date" min="2020-01-01" max="2035-12-31"></label><label class="cc-field" for="a-entitaet">Entität<select class="dash-select" id="a-entitaet"><option value="">keine Angabe</option><option value="MMT UG">MMT UG</option><option value="Persönliche Marke">Persönliche Marke</option><option value="Side-Projects">Side-Projects</option></select></label><label class="cc-field cc-wide" for="a-projekt">Projekt<select class="dash-select" id="a-projekt" data-draw="projekt-optionen" data-source="projekte"></select></label><label class="cc-field" for="a-projekttext">Projekt-Kürzel (Text)<input class="cc-input" id="a-projekttext" type="text" maxlength="500" autocomplete="off"></label><fieldset class="cc-field cc-multi" id="a-wirkung"><legend>Wirkung</legend><div class="cc-checks"><label class="cc-check"><input type="checkbox" value="Umsatz"> Umsatz</label><label class="cc-check"><input type="checkbox" value="Reichweite"> Reichweite</label><label class="cc-check"><input type="checkbox" value="Betrieb"> Betrieb</label></div></fieldset><label class="cc-field cc-wide" for="a-next">Nächster Schritt<textarea class="cc-input" id="a-next" rows="3"></textarea></label><label class="cc-field cc-wide" for="a-fertig">Fertigkriterium<textarea class="cc-input" id="a-fertig" rows="3"></textarea></label><label class="cc-check cc-wide" for="a-fortschritt"><input type="checkbox" id="a-fortschritt"> „Letzter Fortschritt“ auf heute setzen</label></div><div class="cc-form-grid" data-type="projekt" hidden><label class="cc-field cc-wide" for="p-name">Name<input class="cc-input" id="p-name" type="text" maxlength="500" autocomplete="off"></label><label class="cc-field" for="p-status">Status<select class="dash-select" id="p-status"><option value="Geplant">Geplant</option><option value="Aktiv">Aktiv</option><option value="Blockiert">Blockiert</option><option value="Abgeschlossen">Abgeschlossen</option><option value="Geparkt">Geparkt</option></select></label><label class="cc-field" for="p-prio">Priorität<select class="dash-select" id="p-prio"><option value="">keine Angabe</option><option value="MUSS">MUSS</option><option value="SOLL">SOLL</option><option value="KANN">KANN</option></select></label><label class="cc-field" for="p-bereich">Bereich<select class="dash-select" id="p-bereich"><option value="">keine Angabe</option><option value="00 Steuerung">00 Steuerung</option><option value="10 MMT UG">10 MMT UG</option><option value="20 Persönliche Marke">20 Persönliche Marke</option><option value="30 Content Gem / SaaS">30 Content Gem / SaaS</option><option value="40 Social Media">40 Social Media</option><option value="90 Side-Projects">90 Side-Projects</option></select></label><label class="cc-field" for="p-entitaet">Entität<select class="dash-select" id="p-entitaet"><option value="">keine Angabe</option><option value="MMT UG">MMT UG</option><option value="Persönliche Marke">Persönliche Marke</option><option value="Side-Projects">Side-Projects</option></select></label><label class="cc-field" for="p-deadline">Deadline<input class="cc-input" id="p-deadline" type="date" min="2020-01-01" max="2035-12-31"></label><fieldset class="cc-field cc-multi" id="p-ziel"><legend>Zielbeitrag</legend><div class="cc-checks"><label class="cc-check"><input type="checkbox" value="Umsatz"> Umsatz</label><label class="cc-check"><input type="checkbox" value="Reichweite"> Reichweite</label><label class="cc-check"><input type="checkbox" value="Produkt"> Produkt</label><label class="cc-check"><input type="checkbox" value="Betrieb"> Betrieb</label></div></fieldset><label class="cc-field cc-wide" for="p-meilenstein">Nächster Meilenstein<textarea class="cc-input" id="p-meilenstein" rows="3"></textarea></label><label class="cc-field cc-wide" for="p-blocker">Blocker / Stand<textarea class="cc-input" id="p-blocker" rows="3"></textarea></label><label class="cc-check cc-wide" for="p-fortschritt"><input type="checkbox" id="p-fortschritt"> „Letzter Fortschritt“ auf heute setzen</label><div class="cc-wide cc-sublist" data-mode="edit"><div class="cc-block-head"><span class="cc-label">Aufgaben in diesem Projekt</span><button type="button" class="cc-btn" data-new="aufgabe" data-prefill="projekt">Neue Aufgabe in diesem Projekt</button></div><ul class="cc-list" data-draw="editor-projekt-aufgaben" data-source="aufgaben"></ul></div></div><div class="cc-form-grid" data-type="content" hidden><label class="cc-field cc-wide" for="c-name">Titel<input class="cc-input" id="c-name" type="text" maxlength="500" autocomplete="off"></label><label class="cc-field" for="c-status">Status<select class="dash-select" id="c-status"><option value="Idee">Idee</option><option value="In Produktion">In Produktion</option><option value="Geplant">Geplant</option><option value="Veröffentlicht">Veröffentlicht</option><option value="Geparkt">Geparkt</option></select></label><label class="cc-field" for="c-prio">Priorität<select class="dash-select" id="c-prio"><option value="">keine Angabe</option><option value="MUSS">MUSS</option><option value="SOLL">SOLL</option><option value="OPTIONAL">OPTIONAL</option></select></label><label class="cc-field" for="c-datum">Veröffentlichung<input class="cc-input" id="c-datum" type="date" min="2020-01-01" max="2035-12-31"></label><label class="cc-field" for="c-format">Format<select class="dash-select" id="c-format"><option value="">keine Angabe</option><option value="Longform">Longform</option><option value="Short/Reel">Short/Reel</option><option value="Carousel">Carousel</option><option value="Post">Post</option><option value="Artikel">Artikel</option></select></label><label class="cc-field" for="c-ziel">Ziel<select class="dash-select" id="c-ziel"><option value="">keine Angabe</option><option value="Reichweite">Reichweite</option><option value="Leads">Leads</option><option value="Verkauf">Verkauf</option></select></label><label class="cc-field" for="c-entitaet">Entität<select class="dash-select" id="c-entitaet"><option value="">keine Angabe</option><option value="MMT UG">MMT UG</option><option value="Persönliche Marke">Persönliche Marke</option></select></label><label class="cc-field" for="c-aufrufe">Aufrufe<input class="cc-input" id="c-aufrufe" type="number" step="any" inputmode="decimal" placeholder="leer = unbekannt"></label><fieldset class="cc-field cc-multi cc-wide" id="c-kanal"><legend>Kanal</legend><div class="cc-checks"><label class="cc-check"><input type="checkbox" value="YouTube"> YouTube</label><label class="cc-check"><input type="checkbox" value="Instagram"> Instagram</label><label class="cc-check"><input type="checkbox" value="LinkedIn"> LinkedIn</label><label class="cc-check"><input type="checkbox" value="Community"> Community</label><label class="cc-check"><input type="checkbox" value="Newsletter"> Newsletter</label><label class="cc-check"><input type="checkbox" value="Blog"> Blog</label><label class="cc-check"><input type="checkbox" value="X"> X</label></div></fieldset><label class="cc-field cc-wide" for="c-next">Nächster Schritt<textarea class="cc-input" id="c-next" rows="3"></textarea></label><label class="cc-field cc-wide" for="c-cta">Call to Action<textarea class="cc-input" id="c-cta" rows="3"></textarea></label></div><div class="cc-form-grid" data-type="kennzahl" hidden><label class="cc-field cc-wide" for="k-zeitraum">Zeitraum<input class="cc-input" id="k-zeitraum" type="text" maxlength="500" autocomplete="off"></label><label class="cc-field" for="k-stichtag">Stichtag (Montag)<input class="cc-input" id="k-stichtag" type="date" min="2020-01-01" max="2035-12-31"></label><label class="cc-field" for="k-datenstatus">Datenstatus<select class="dash-select" id="k-datenstatus"><option value="">keine Angabe</option><option value="Ungeprueft">ungeprüft</option><option value="Teilweise geprueft">teilweise geprüft</option><option value="Geprueft">geprüft</option></select></label><label class="cc-field" for="k-erfasst">Erfasst durch<select class="dash-select" id="k-erfasst"><option value="">keine Angabe</option><option value="Chris">Chris</option><option value="ChatGPT">ChatGPT</option><option value="Claude">Claude</option><option value="Import">Import</option></select></label><label class="cc-field" for="k-umsatz-gebucht">Umsatz gebucht (€)<input class="cc-input" id="k-umsatz-gebucht" type="number" step="any" inputmode="decimal" placeholder="leer = unbekannt"></label><label class="cc-field" for="k-umsatz-real">Umsatz realisiert (€)<input class="cc-input" id="k-umsatz-real" type="number" step="any" inputmode="decimal" placeholder="leer = unbekannt"></label><label class="cc-field" for="k-coach-anfr">Coaching-Anfragen<input class="cc-input" id="k-coach-anfr" type="number" step="any" inputmode="decimal" placeholder="leer = unbekannt"></label><label class="cc-field" for="k-coach-buch">Coaching-Buchungen<input class="cc-input" id="k-coach-buch" type="number" step="any" inputmode="decimal" placeholder="leer = unbekannt"></label><label class="cc-field" for="k-gespraeche">Verkaufsgespräche<input class="cc-input" id="k-gespraeche" type="number" step="any" inputmode="decimal" placeholder="leer = unbekannt"></label><label class="cc-field" for="k-leads">Neue Leads<input class="cc-input" id="k-leads" type="number" step="any" inputmode="decimal" placeholder="leer = unbekannt"></label><label class="cc-field" for="k-klicks">Angebots-Klicks<input class="cc-input" id="k-klicks" type="number" step="any" inputmode="decimal" placeholder="leer = unbekannt"></label><label class="cc-field" for="k-tds-buch">TDS-Buchungen<input class="cc-input" id="k-tds-buch" type="number" step="any" inputmode="decimal" placeholder="leer = unbekannt"></label><label class="cc-field" for="k-tds-frei">TDS-Freiplätze<input class="cc-input" id="k-tds-frei" type="number" step="any" inputmode="decimal" placeholder="leer = unbekannt"></label><label class="cc-field" for="k-web-reg">Webinar-Registrierungen<input class="cc-input" id="k-web-reg" type="number" step="any" inputmode="decimal" placeholder="leer = unbekannt"></label><label class="cc-field" for="k-web-teil">Webinar-Teilnahmen<input class="cc-input" id="k-web-teil" type="number" step="any" inputmode="decimal" placeholder="leer = unbekannt"></label><label class="cc-field" for="k-community">Neue Community-Mitglieder<input class="cc-input" id="k-community" type="number" step="any" inputmode="decimal" placeholder="leer = unbekannt"></label><label class="cc-field" for="k-newsletter">Newsletter-Anmeldungen<input class="cc-input" id="k-newsletter" type="number" step="any" inputmode="decimal" placeholder="leer = unbekannt"></label><label class="cc-field" for="k-assets">Content-Assets<input class="cc-input" id="k-assets" type="number" step="any" inputmode="decimal" placeholder="leer = unbekannt"></label><label class="cc-field" for="k-posts">Posts<input class="cc-input" id="k-posts" type="number" step="any" inputmode="decimal" placeholder="leer = unbekannt"></label><label class="cc-field" for="k-views">Video-Views<input class="cc-input" id="k-views" type="number" step="any" inputmode="decimal" placeholder="leer = unbekannt"></label><label class="cc-field" for="k-muss-done">Abgeschlossene MUSS<input class="cc-input" id="k-muss-done" type="number" step="any" inputmode="decimal" placeholder="leer = unbekannt"></label><label class="cc-field" for="k-muss-late">Überfällige MUSS<input class="cc-input" id="k-muss-late" type="number" step="any" inputmode="decimal" placeholder="leer = unbekannt"></label><label class="cc-field cc-wide" for="k-notiz">Notiz<textarea class="cc-input" id="k-notiz" rows="5"></textarea></label><label class="cc-field cc-wide" for="k-quelle">Quelle<textarea class="cc-input" id="k-quelle" rows="3"></textarea></label></div><div class="cc-form-grid" data-type="routine" hidden><label class="cc-field cc-wide" for="r-name">Name<input class="cc-input" id="r-name" type="text" maxlength="500" autocomplete="off"></label><label class="cc-field" for="r-status">Status<select class="dash-select" id="r-status"><option value="Geplant">Geplant</option><option value="Läuft">Läuft</option><option value="Pausiert">Pausiert</option></select></label><label class="cc-field" for="r-rhythmus">Rhythmus<select class="dash-select" id="r-rhythmus"><option value="">keine Angabe</option><option value="Täglich">Täglich</option><option value="Wöchentlich">Wöchentlich</option><option value="14-tägig">14-tägig</option><option value="Monatlich">Monatlich</option><option value="Bedarfsweise">Bedarfsweise</option></select></label><label class="cc-field" for="r-letzte">Letzte Durchführung<input class="cc-input" id="r-letzte" type="date" min="2020-01-01" max="2035-12-31"></label><label class="cc-field" for="r-naechste">Nächste Durchführung<input class="cc-input" id="r-naechste" type="date" min="2020-01-01" max="2035-12-31"></label><label class="cc-field cc-wide" for="r-aktion">Nächste Aktion<textarea class="cc-input" id="r-aktion" rows="3"></textarea></label><label class="cc-field cc-wide" for="r-mass">Ergebnismaß<textarea class="cc-input" id="r-mass" rows="3"></textarea></label></div>
       <p class="cc-msg is-bad" data-msg="noname" hidden>Bitte einen Titel eingeben.</p>
-      <p class="cc-msg is-bad" data-msg="baddate" hidden>Das Datum ist unvollständig.</p>
+      <p class="cc-msg is-bad" data-msg="baddate" hidden>Ein Datum ist unvollständig.</p>
+      <p class="cc-msg is-bad" data-msg="badnum" hidden>Bitte in Zahlenfeldern nur Zahlen eintragen. Leer heißt unbekannt.</p>
       <div class="cc-msgs" role="status" aria-live="polite">
         <p class="cc-msg is-wait" data-msg="saving" hidden>Wird in Notion gespeichert …</p>
         <p class="cc-msg is-ok" data-msg="saved" hidden>In Notion gespeichert.</p>
-        <p class="cc-msg is-bad" data-msg="approval" hidden>Speichern braucht deine Freigabe für den Notion-Connector. Erlaube den Zugriff, wenn claude.ai danach fragt, und speichere erneut.</p>
+        <p class="cc-msg is-ok" data-msg="archived" hidden>Archiviert.</p>
+        <p class="cc-msg is-ok" data-msg="deleted" hidden>In den Notion-Papierkorb verschoben. Dort lässt sich der Eintrag wiederherstellen.</p>
+        <p class="cc-msg is-bad" data-msg="approval" hidden>Speichern braucht deine Freigabe für den Notion-Connector. Erlaube den Zugriff, wenn claude.ai danach fragt, und versuche es erneut.</p>
         <p class="cc-msg is-bad" data-msg="reconnect" hidden>Der Notion-Connector ist nicht verbunden oder abgelaufen. Verbinde Notion in claude.ai unter Einstellungen › Connectors neu.</p>
         <p class="cc-msg is-bad" data-msg="nomcp" hidden>In dieser Ansicht kann das Dashboard nicht in Notion schreiben. Öffne es in claude.ai.</p>
         <p class="cc-msg is-bad" data-msg="error" hidden>Notion hat die Änderung nicht übernommen: <span data-draw="save-detail"></span></p>
@@ -550,16 +570,19 @@
       <div class="cc-form-actions">
         <div>
           <button type="submit" class="cc-btn is-primary" id="dlg-save">Speichern</button>
-          <button type="button" class="cc-btn" id="dlg-cancel">Abbrechen</button>
+          <button type="button" class="cc-btn" id="dlg-cancel">Schließen</button>
         </div>
         <div data-mode="edit">
-          <button type="button" class="cc-btn is-danger" id="dlg-archive">Archivieren</button>
+          <button type="button" class="cc-btn" id="dlg-archive">Archivieren</button>
           <button type="button" class="cc-btn is-danger" id="dlg-archive-yes" hidden>Ja, archivieren</button>
-          <button type="button" class="cc-btn" id="dlg-archive-no" hidden>Nicht archivieren</button>
+          <button type="button" class="cc-btn is-danger" id="dlg-delete">Löschen</button>
+          <button type="button" class="cc-btn is-danger" id="dlg-delete-yes" hidden>Ja, in den Papierkorb</button>
+          <button type="button" class="cc-btn" id="dlg-confirm-no" hidden>Doch nicht</button>
         </div>
       </div>
     </form>
   </dialog>
+  <!-- editor:end -->
 </div>
 
 <script>
@@ -611,6 +634,12 @@
       const el = h(ok ? 'a' : 'span', cls, text);
       if (ok) { el.href = url; el.target = '_blank'; el.rel = 'noopener'; }
       return el;
+    }
+    function opener(type, row, text, cls) {
+      const b = h('button', 'cc-open' + (cls ? ' ' + cls : ''), text || 'ohne Titel');
+      b.type = 'button';
+      b.addEventListener('click', () => { if (window.ccEdit) window.ccEdit.open(type, row); });
+      return b;
     }
     function pill(text, tone, noDot) {
       const el = h('span', 'cc-pill ' + (tone || 'tone-muted') + (noDot ? ' no-dot' : ''), text);
@@ -670,7 +699,7 @@
     function taskCard(r, opt = {}) {
       const li = h('li', 'cc-task');
       li.id = 'aufgabe-' + r.id;
-      const title = mark(link(r.url, r.name, 'cc-task-title'), 'aufgaben', 'name', 'id=' + r.id);
+      const title = mark(opener('aufgabe', r, r.name, 'cc-task-title'), 'aufgaben', 'name', 'id=' + r.id);
       const meta = h('div', 'cc-meta');
       if (r.prio) meta.append(mark(pill(r.prio, prioTone(r.prio)), 'aufgaben', 'prio', 'id=' + r.id));
       if (opt.status) meta.append(mark(pill(r.status, statusTone(r.status)), 'aufgaben', 'status', 'id=' + r.id));
@@ -682,12 +711,11 @@
         li.append(mark(h('p', 'cc-next', r.naechster_schritt), 'aufgaben', 'naechster_schritt', 'id=' + r.id));
       }
       const tpl = document.getElementById('tpl-aufgabe-aktionen');
-      if (tpl && tpl.content && window.ccEdit) {
+      if (tpl && tpl.content && window.ccEdit && opt.actions !== false && isOpen(r)) {
         const actions = tpl.content.cloneNode(true);
         actions.querySelectorAll('[data-act]').forEach((b) => {
           const act = b.getAttribute('data-act');
-          if (act === 'done' && !isOpen(r)) b.hidden = true;
-          b.addEventListener('click', () => (act === 'done' ? window.ccEdit.quickDone(r, b) : window.ccEdit.open(r)));
+          if (act === 'done') b.addEventListener('click', () => window.ccEdit.quickDone(r, b));
         });
         li.append(actions);
       }
@@ -725,7 +753,7 @@
     }
 
     return { OPEN, BEREICHE, today, day, addDays, diff, fmt, num, eur, list, isOpen, prioRank, byDeadlineThenPrio, byPrioThenDeadline,
-      h, mark, link, pill, prioTone, statusTone, bereichColor, dueInfo, state, fallback, emptyItem, matchesFilter, taskCard, progress, stillInfo };
+      h, mark, link, opener, pill, prioTone, statusTone, bereichColor, dueInfo, state, fallback, emptyItem, matchesFilter, taskCard, progress, stillInfo };
   })();
 </script>
 
@@ -794,10 +822,10 @@
         id: num(r['Content-ID']), name: r.Name ?? null, status: r.Status ?? null, prio: r['Priorität'] ?? null,
         format: r.Format ?? null, kanal: r.Kanal ?? null, ziel: r.Ziel ?? null, entitaet: r['Entität'] ?? null,
         datum: r['date:Veröffentlichung:start'] ?? null, aufrufe: num(r.Aufrufe),
-        naechster_schritt: r['Nächster Schritt'] ?? null, url: r.url ?? null
+        naechster_schritt: r['Nächster Schritt'] ?? null, cta: r.CTA ?? null, url: r.url ?? null
       }));
       rows.sort((a, b) => String(b.datum || '').localeCompare(String(a.datum || '')) || b.id - a.id);
-      return { columns: ['id', 'name', 'status', 'prio', 'format', 'kanal', 'ziel', 'entitaet', 'datum', 'aufrufe', 'naechster_schritt', 'url'], rows };
+      return { columns: ['id', 'name', 'status', 'prio', 'format', 'kanal', 'ziel', 'entitaet', 'datum', 'aufrufe', 'naechster_schritt', 'cta', 'url'], rows };
     }
   });
 
@@ -820,10 +848,12 @@
         gespraeche: num(r.Verkaufsgespraeche), leads: num(r['Neue Leads']), content_assets: num(r['Content Assets']),
         posts: num(r.Posts), video_views: num(r['Video Views']), webinar_reg: num(r['Webinar Registrierungen']),
         community_neu: num(r['Neue Community Mitglieder']), newsletter: num(r['Newsletter Anmeldungen']),
+        angebots_klicks: num(r['Angebots Klicks']), tds_buchungen: num(r['TDS Buchungen']), tds_freiplaetze: num(r['TDS Freiplaetze']),
+        webinar_teilnahmen: num(r['Webinar Teilnahmen']), abgeschlossene_muss: num(r['Abgeschlossene MUSS']), ueberfaellige_muss: num(r['Ueberfaellige MUSS']),
         erfasst_durch: r['Erfasst durch'] ?? null, notiz: r.Notiz ?? null, quelle: r.Quelle ?? null, url: r.url ?? null
       }));
       rows.sort((a, b) => String(b.stichtag || '').localeCompare(String(a.stichtag || '')));
-      return { columns: ['zeitraum', 'stichtag', 'datenstatus', 'umsatz_gebucht', 'umsatz_realisiert', 'coaching_anfragen', 'coaching_buchungen', 'gespraeche', 'leads', 'content_assets', 'posts', 'video_views', 'webinar_reg', 'community_neu', 'newsletter', 'erfasst_durch', 'notiz', 'quelle', 'url'], rows };
+      return { columns: ['zeitraum', 'stichtag', 'datenstatus', 'umsatz_gebucht', 'umsatz_realisiert', 'coaching_anfragen', 'coaching_buchungen', 'gespraeche', 'leads', 'content_assets', 'posts', 'video_views', 'webinar_reg', 'community_neu', 'newsletter', 'angebots_klicks', 'tds_buchungen', 'tds_freiplaetze', 'webinar_teilnahmen', 'abgeschlossene_muss', 'ueberfaellige_muss', 'erfasst_durch', 'notiz', 'quelle', 'url'], rows };
     }
   });
 
@@ -987,7 +1017,7 @@
       const row = cc.h('div', 'cc-prow');
       row.id = 'projekt-kurz-' + p.id;
       const name = cc.h('div', 'cc-prow-name');
-      name.append(cc.mark(cc.link(p.url, p.name), 'projekte', 'name', 'id=' + p.id));
+      name.append(cc.mark(cc.opener('projekt', p, p.name), 'projekte', 'name', 'id=' + p.id));
       const meta = cc.h('div', 'cc-meta');
       if (p.prio) meta.append(cc.mark(cc.pill(p.prio, cc.prioTone(p.prio)), 'projekte', 'prio', 'id=' + p.id));
       if (p.status !== 'Aktiv') meta.append(cc.mark(cc.pill(p.status, cc.statusTone(p.status)), 'projekte', 'status', 'id=' + p.id));
@@ -1178,7 +1208,7 @@
         meta.append(cc.mark(cc.pill(p.status, cc.statusTone(p.status)), 'projekte', 'status', w));
         if (p.prio) meta.append(cc.mark(cc.pill(p.prio, cc.prioTone(p.prio)), 'projekte', 'prio', w));
         cc.list(p.ziel).forEach((z) => meta.append(cc.h('span', 'cc-chip', z)));
-        card.append(cc.mark(cc.link(p.url, p.name, 'cc-card-title'), 'projekte', 'name', w), meta);
+        card.append(cc.mark(cc.opener('projekt', p, p.name, 'cc-card-title'), 'projekte', 'name', w), meta);
         card.append(cc.progress(stand.get(p.id), cc.bereichColor(p.bereich)));
         if (p.meilenstein) {
           card.append(cc.h('span', 'cc-label', 'Nächster Meilenstein'), cc.mark(cc.h('p', 'cc-next', p.meilenstein), 'projekte', 'meilenstein', w));
@@ -1210,7 +1240,7 @@
       const li = cc.h('li', 'cc-task');
       const meta = cc.h('div', 'cc-meta');
       meta.append(cc.mark(cc.pill(p.status, cc.statusTone(p.status)), 'projekte', 'status', 'id=' + p.id), cc.h('span', 'cc-chip', p.bereich || ''));
-      li.append(cc.mark(cc.link(p.url, p.name, 'cc-task-title'), 'projekte', 'name', 'id=' + p.id), meta);
+      li.append(cc.mark(cc.opener('projekt', p, p.name, 'cc-task-title'), 'projekte', 'name', 'id=' + p.id), meta);
       return li;
     }));
     if (!rows.length) el.replaceChildren(cc.emptyItem('Keine.'));
@@ -1245,7 +1275,7 @@
         dt.append(cc.h('span', 'is-unknown', 'ohne Datum'));
       }
       const title = cc.h('td', 'title');
-      title.append(cc.link(c.url, c.name));
+      title.append(cc.opener('content', c, c.name));
       const st = cc.h('td', 'nowrap'); st.append(cc.pill(c.status, cc.statusTone(c.status)));
       const pr = cc.h('td', 'nowrap'); if (c.prio) pr.append(cc.pill(c.prio, cc.prioTone(c.prio === 'OPTIONAL' ? 'KANN' : c.prio)));
       tr.append(dt, title, st, cc.h('td', 'nowrap', c.format || ''), cc.h('td', '', cc.list(c.kanal).join(', ')), cc.h('td', 'nowrap', c.ziel || ''), pr);
@@ -1262,7 +1292,7 @@
       const li = cc.h('li', 'cc-task');
       const meta = cc.h('div', 'cc-meta');
       [c.format, cc.list(c.kanal).join(', '), c.ziel].filter(Boolean).forEach((t) => meta.append(cc.h('span', 'cc-chip', t)));
-      li.append(cc.mark(cc.link(c.url, c.name, 'cc-task-title'), 'content', 'name', 'id=' + c.id), meta);
+      li.append(cc.mark(cc.opener('content', c, c.name, 'cc-task-title'), 'content', 'name', 'id=' + c.id), meta);
       return li;
     }));
     if (!rows.length) el.replaceChildren(cc.emptyItem('Keine Ideen gespeichert.'));
@@ -1284,7 +1314,7 @@
       tr.dataset.key = String(r.stichtag || '');
       fields.forEach((f) => {
         const v = r[f];
-        if (f === 'zeitraum') { const td = cc.h('td', 'title'); td.append(cc.link(r.url, v || '')); tr.append(td); return; }
+        if (f === 'zeitraum') { const td = cc.h('td', 'title'); td.append(cc.opener('kennzahl', r, v || 'ohne Zeitraum')); tr.append(td); return; }
         if (f === 'datenstatus') { const td = cc.h('td', 'nowrap'); if (v) td.append(cc.pill(label[v] || v, tone[v])); tr.append(td); return; }
         const unknown = v == null || v === '';
         tr.append(cc.h('td', 'num' + (unknown ? ' is-unknown' : ''), unknown ? 'k. A.' : (eurFields.includes(f) ? cc.eur(v) : cc.num(v))));
@@ -1319,7 +1349,7 @@
       const meta = cc.h('div', 'cc-meta');
       meta.append(cc.mark(cc.pill(r.status, cc.statusTone(r.status)), 'routinen', 'status', w));
       if (r.rhythmus) meta.append(cc.mark(cc.h('span', 'cc-chip', r.rhythmus), 'routinen', 'rhythmus', w));
-      li.append(cc.mark(cc.link(r.url, r.name, 'cc-card-title'), 'routinen', 'name', w), meta);
+      li.append(cc.mark(cc.opener('routine', r, r.name, 'cc-card-title'), 'routinen', 'name', w), meta);
       if (r.naechste_aktion) li.append(cc.h('span', 'cc-label', 'Nächste Aktion'), cc.mark(cc.h('p', 'cc-next', r.naechste_aktion), 'routinen', 'naechste_aktion', w));
       if (r.ergebnismass) li.append(cc.h('span', 'cc-label', 'Ergebnismaß'), cc.mark(cc.h('p', 'cc-next', r.ergebnismass), 'routinen', 'ergebnismass', w));
       const foot = cc.h('div', 'cc-card-foot');
@@ -1333,14 +1363,103 @@
 </script>
 
 <script>
-  /* Aufgaben bearbeiten: schreibt auf Knopfdruck über den Notion-Connector des Betrachters */
+  /* Kacheln: zeigen beim Antippen die Einträge dahinter */
+  window.ccTiles = { open: null };
+  (() => {
+    const panel = () => document.getElementById('kachel-detail');
+    function show(key) {
+      const p = panel();
+      if (!p) return;
+      window.ccTiles.open = key;
+      p.hidden = !key;
+      document.querySelectorAll('[data-kachel]').forEach((t) => t.setAttribute('aria-expanded', t.getAttribute('data-kachel') === key ? 'true' : 'false'));
+      p.querySelectorAll('[data-kachel-titel]').forEach((h) => { h.hidden = h.getAttribute('data-kachel-titel') !== key; });
+      p.querySelectorAll('[data-kachel-aktion]').forEach((b) => { b.hidden = !String(b.getAttribute('data-kachel-aktion')).split(' ').includes(key); });
+      if (key) dash.draw('kachel-liste');
+    }
+    document.querySelectorAll('[data-kachel]').forEach((t) => t.addEventListener('click', () => {
+      const key = t.getAttribute('data-kachel');
+      show(window.ccTiles.open === key ? null : key);
+    }));
+    document.querySelectorAll('#kachel-zu').forEach((b) => b.addEventListener('click', () => show(null)));
+    document.querySelectorAll('#kachel-woche-eintragen').forEach((b) => b.addEventListener('click', () => {
+      const k = dash.data('kennzahlen');
+      const row = k.status === 'ok' ? k.data[0] : null;
+      if (window.ccEdit) window.ccEdit.open('kennzahl', row || null);
+    }));
+  })();
+
+  dash.draw('kachel-liste', (el) => {
+    const key = window.ccTiles.open;
+    if (!key) { el.replaceChildren(); return; }
+    if (key === 'projekte') {
+      const s = cc.state(el, ['projekte', 'projektstand']);
+      if (!s.ok) return cc.fallback(el, s, 'Die Projekte');
+      const stand = new Map(dash.data('projektstand').data.map((r) => [r.id, r]));
+      const rows = dash.data('projekte').data.filter((p) => p.status === 'Aktiv' || p.status === 'Blockiert')
+        .sort((a, b) => cc.prioRank(a.prio) - cc.prioRank(b.prio));
+      el.replaceChildren(...rows.map((p) => {
+        const w = 'id=' + p.id;
+        const li = cc.h('li', 'cc-task');
+        const meta = cc.h('div', 'cc-meta');
+        meta.append(cc.mark(cc.pill(p.status, cc.statusTone(p.status)), 'projekte', 'status', w));
+        if (p.prio) meta.append(cc.mark(cc.pill(p.prio, cc.prioTone(p.prio)), 'projekte', 'prio', w));
+        const still = cc.stillInfo(p.fortschritt);
+        meta.append(cc.mark(cc.h('span', 'cc-due' + (still.warn ? ' is-warn' : ''), still.text), 'projekte', 'fortschritt', w));
+        li.append(cc.mark(cc.opener('projekt', p, p.name, 'cc-task-title'), 'projekte', 'name', w), meta, cc.progress(stand.get(p.id), cc.bereichColor(p.bereich)));
+        return li;
+      }));
+      if (!rows.length) el.replaceChildren(cc.emptyItem('Keine aktiven Projekte.'));
+      return;
+    }
+    if (key === 'umsatz') {
+      const s = cc.state(el, ['kennzahlen']);
+      if (!s.ok) return cc.fallback(el, s, 'Die Kennzahlen');
+      const r = dash.data('kennzahlen').data[0];
+      if (!r) { el.replaceChildren(cc.emptyItem('Noch keine Kennzahlen-Woche angelegt.')); return; }
+      const li = cc.h('li', 'cc-task');
+      const head = cc.h('div', 'cc-meta');
+      head.append(cc.mark(cc.opener('kennzahl', r, r.zeitraum || 'ohne Zeitraum', 'cc-task-title'), 'kennzahlen', 'zeitraum', 'stichtag=' + (r.stichtag || '')));
+      const dl = cc.h('dl', 'cc-kv');
+      const eur = ['umsatz_gebucht', 'umsatz_realisiert'];
+      document.querySelectorAll('#kennzahlen th[data-field]').forEach((th) => {
+        const f = th.getAttribute('data-field');
+        if (f === 'zeitraum' || f === 'datenstatus') return;
+        const v = r[f];
+        const unknown = v == null || v === '';
+        const box = cc.h('div');
+        const dd = cc.mark(cc.h('dd', unknown ? 'is-unknown' : '', unknown ? 'k. A.' : (eur.includes(f) ? cc.eur(v) : cc.num(v))), 'kennzahlen', f, 'stichtag=' + (r.stichtag || ''));
+        box.append(cc.h('dt', '', th.textContent), dd);
+        dl.append(box);
+      });
+      li.append(head, dl);
+      el.replaceChildren(li);
+      return;
+    }
+    const s = cc.state(el, ['aufgaben']);
+    if (!s.ok) return cc.fallback(el, s, 'Die Aufgaben');
+    const today = cc.today();
+    const in7 = cc.addDays(today, 7);
+    const test = {
+      offen: () => true,
+      muss: (a) => a.prio === 'MUSS',
+      ueberfaellig: (a) => a.deadline && cc.day(a.deadline) < today,
+      woche: (a) => a.deadline && cc.day(a.deadline) >= today && cc.day(a.deadline) <= in7
+    }[key] || (() => false);
+    const rows = dash.data('aufgaben').data.filter((a) => cc.isOpen(a) && test(a)).sort(cc.byDeadlineThenPrio);
+    el.replaceChildren(...rows.map((r) => cc.taskCard(r, { status: r.status !== 'Offen' })));
+    if (!rows.length) el.replaceChildren(cc.emptyItem('Keine Aufgaben.'));
+  });
+</script>
+
+<script>
+  /* Bearbeiten-Menü für Aufgaben, Projekte, Content, Kennzahlen und Routinen.
+     Schreibt nur auf Knopfdruck über den Notion-Connector des Betrachters. Feldliste: tools/editor_spec.py */
   window.ccEdit = (() => {
-    const DATA_SOURCE = 'e7c61ee2-5e31-4a18-9fee-64fbf2c36764';
-    const st = { mode: 'edit', row: null, projekt: '', detail: '', busy: false };
+    const TYPES = /* editor-config:start */ {"aufgabe": {"dataset": "aufgaben", "ds": "e7c61ee2-5e31-4a18-9fee-64fbf2c36764", "archive": true, "progress": "a-fortschritt", "fields": [{"el": "a-name", "prop": "Name", "key": "name", "kind": "text", "required": true, "default": null}, {"el": "a-status", "prop": "Status", "key": "status", "kind": "select", "required": false, "default": "Offen"}, {"el": "a-prio", "prop": "Priorität", "key": "prio", "kind": "select", "required": false, "default": null}, {"el": "a-deadline", "prop": "Deadline", "key": "deadline", "kind": "date", "required": false, "default": null}, {"el": "a-entitaet", "prop": "Entität", "key": "entitaet", "kind": "select", "required": false, "default": null}, {"el": "a-projekt", "prop": "Projekt-Verknuepfung", "key": "projekt_urls", "kind": "relation", "required": false, "default": null}, {"el": "a-projekttext", "prop": "Projekt", "key": "projekt", "kind": "text", "required": false, "default": null}, {"el": "a-wirkung", "prop": "Wirkung", "key": "wirkung", "kind": "multi", "required": false, "default": null}, {"el": "a-next", "prop": "Nächster Schritt", "key": "naechster_schritt", "kind": "area", "required": false, "default": null}, {"el": "a-fertig", "prop": "Fertigkriterium", "key": "fertig", "kind": "area", "required": false, "default": null}]}, "projekt": {"dataset": "projekte", "ds": "5da8040d-bbd2-47b1-9eec-c39d3acca8d0", "archive": true, "progress": "p-fortschritt", "fields": [{"el": "p-name", "prop": "Name", "key": "name", "kind": "text", "required": true, "default": null}, {"el": "p-status", "prop": "Status", "key": "status", "kind": "select", "required": false, "default": "Geplant"}, {"el": "p-prio", "prop": "Priorität", "key": "prio", "kind": "select", "required": false, "default": null}, {"el": "p-bereich", "prop": "Bereich", "key": "bereich", "kind": "select", "required": false, "default": null}, {"el": "p-entitaet", "prop": "Entität", "key": "entitaet", "kind": "select", "required": false, "default": null}, {"el": "p-deadline", "prop": "Deadline", "key": "deadline", "kind": "date", "required": false, "default": null}, {"el": "p-ziel", "prop": "Zielbeitrag", "key": "ziel", "kind": "multi", "required": false, "default": null}, {"el": "p-meilenstein", "prop": "Nächster Meilenstein", "key": "meilenstein", "kind": "area", "required": false, "default": null}, {"el": "p-blocker", "prop": "Blocker", "key": "blocker", "kind": "area", "required": false, "default": null}]}, "content": {"dataset": "content", "ds": "3526a97b-fc76-474e-be72-88a52cc8de41", "archive": false, "progress": null, "fields": [{"el": "c-name", "prop": "Name", "key": "name", "kind": "text", "required": true, "default": null}, {"el": "c-status", "prop": "Status", "key": "status", "kind": "select", "required": false, "default": "Idee"}, {"el": "c-prio", "prop": "Priorität", "key": "prio", "kind": "select", "required": false, "default": null}, {"el": "c-datum", "prop": "Veröffentlichung", "key": "datum", "kind": "date", "required": false, "default": null}, {"el": "c-format", "prop": "Format", "key": "format", "kind": "select", "required": false, "default": null}, {"el": "c-ziel", "prop": "Ziel", "key": "ziel", "kind": "select", "required": false, "default": null}, {"el": "c-entitaet", "prop": "Entität", "key": "entitaet", "kind": "select", "required": false, "default": null}, {"el": "c-aufrufe", "prop": "Aufrufe", "key": "aufrufe", "kind": "number", "required": false, "default": null}, {"el": "c-kanal", "prop": "Kanal", "key": "kanal", "kind": "multi", "required": false, "default": null}, {"el": "c-next", "prop": "Nächster Schritt", "key": "naechster_schritt", "kind": "area", "required": false, "default": null}, {"el": "c-cta", "prop": "CTA", "key": "cta", "kind": "area", "required": false, "default": null}]}, "kennzahl": {"dataset": "kennzahlen", "ds": "bf970300-8cec-401b-93e3-58a6dbe1e316", "archive": false, "progress": null, "fields": [{"el": "k-zeitraum", "prop": "Zeitraum", "key": "zeitraum", "kind": "text", "required": true, "default": null}, {"el": "k-stichtag", "prop": "Stichtag", "key": "stichtag", "kind": "date", "required": false, "default": null}, {"el": "k-datenstatus", "prop": "Datenstatus", "key": "datenstatus", "kind": "select", "required": false, "default": null}, {"el": "k-erfasst", "prop": "Erfasst durch", "key": "erfasst_durch", "kind": "select", "required": false, "default": null}, {"el": "k-umsatz-gebucht", "prop": "Umsatz gebucht EUR", "key": "umsatz_gebucht", "kind": "number", "required": false, "default": null}, {"el": "k-umsatz-real", "prop": "Umsatz realisiert EUR", "key": "umsatz_realisiert", "kind": "number", "required": false, "default": null}, {"el": "k-coach-anfr", "prop": "Coaching Anfragen", "key": "coaching_anfragen", "kind": "number", "required": false, "default": null}, {"el": "k-coach-buch", "prop": "Coaching Buchungen", "key": "coaching_buchungen", "kind": "number", "required": false, "default": null}, {"el": "k-gespraeche", "prop": "Verkaufsgespraeche", "key": "gespraeche", "kind": "number", "required": false, "default": null}, {"el": "k-leads", "prop": "Neue Leads", "key": "leads", "kind": "number", "required": false, "default": null}, {"el": "k-klicks", "prop": "Angebots Klicks", "key": "angebots_klicks", "kind": "number", "required": false, "default": null}, {"el": "k-tds-buch", "prop": "TDS Buchungen", "key": "tds_buchungen", "kind": "number", "required": false, "default": null}, {"el": "k-tds-frei", "prop": "TDS Freiplaetze", "key": "tds_freiplaetze", "kind": "number", "required": false, "default": null}, {"el": "k-web-reg", "prop": "Webinar Registrierungen", "key": "webinar_reg", "kind": "number", "required": false, "default": null}, {"el": "k-web-teil", "prop": "Webinar Teilnahmen", "key": "webinar_teilnahmen", "kind": "number", "required": false, "default": null}, {"el": "k-community", "prop": "Neue Community Mitglieder", "key": "community_neu", "kind": "number", "required": false, "default": null}, {"el": "k-newsletter", "prop": "Newsletter Anmeldungen", "key": "newsletter", "kind": "number", "required": false, "default": null}, {"el": "k-assets", "prop": "Content Assets", "key": "content_assets", "kind": "number", "required": false, "default": null}, {"el": "k-posts", "prop": "Posts", "key": "posts", "kind": "number", "required": false, "default": null}, {"el": "k-views", "prop": "Video Views", "key": "video_views", "kind": "number", "required": false, "default": null}, {"el": "k-muss-done", "prop": "Abgeschlossene MUSS", "key": "abgeschlossene_muss", "kind": "number", "required": false, "default": null}, {"el": "k-muss-late", "prop": "Ueberfaellige MUSS", "key": "ueberfaellige_muss", "kind": "number", "required": false, "default": null}, {"el": "k-notiz", "prop": "Notiz", "key": "notiz", "kind": "area", "required": false, "default": null}, {"el": "k-quelle", "prop": "Quelle", "key": "quelle", "kind": "area", "required": false, "default": null}]}, "routine": {"dataset": "routinen", "ds": "9bb7dfe0-0820-4de2-bed2-471a4b77f927", "archive": false, "progress": null, "fields": [{"el": "r-name", "prop": "Name", "key": "name", "kind": "text", "required": true, "default": null}, {"el": "r-status", "prop": "Status", "key": "status", "kind": "select", "required": false, "default": "Geplant"}, {"el": "r-rhythmus", "prop": "Rhythmus", "key": "rhythmus", "kind": "select", "required": false, "default": null}, {"el": "r-letzte", "prop": "Letzte Durchführung", "key": "letzte", "kind": "date", "required": false, "default": null}, {"el": "r-naechste", "prop": "Nächste Durchführung", "key": "naechste", "kind": "date", "required": false, "default": null}, {"el": "r-aktion", "prop": "Nächste Aktion", "key": "naechste_aktion", "kind": "area", "required": false, "default": null}, {"el": "r-mass", "prop": "Ergebnismaß", "key": "ergebnismass", "kind": "area", "required": false, "default": null}]}} /* editor-config:end */;
+    const st = { type: null, mode: 'edit', row: null, projekt: '', dirty: new Set(), detail: '', busy: false, confirm: null };
     const byId = (id) => document.getElementById(id);
     const pageId = (u) => ((String(u || '').match(/[0-9a-f]{32}/i) || [''])[0]).toLowerCase();
-    const dlg = () => byId('aufgabe-dialog');
-    const form = () => byId('aufgabe-form');
     let barTimer = 0;
 
     function setMsg(scope, key) {
@@ -1354,6 +1473,15 @@
     }
 
     dash.draw('save-detail', (el) => { el.textContent = st.detail || 'unbekannter Fehler'; });
+
+    dash.draw('editor-notion-link', (el) => {
+      const url = st.row && st.row.url;
+      if (st.mode === 'edit' && typeof url === 'string' && url.startsWith('https://')) {
+        el.replaceChildren(cc.link(url, 'In Notion öffnen', 'cc-notion-link'));
+      } else {
+        el.replaceChildren();
+      }
+    });
 
     function projectsAll() { const d = dash.data('projekte'); return d.status === 'ok' ? d.data : []; }
     function currentProject(row) {
@@ -1370,73 +1498,152 @@
       if (st.projekt && !choose.some((p) => pageId(p.url) === pageId(st.projekt))) opts.push(new Option('verknüpftes Projekt', st.projekt));
       sel.replaceChildren(...opts);
       sel.value = st.projekt;
-      sel.onchange = () => { st.projekt = sel.value; };
+      sel.onchange = () => { st.projekt = sel.value; st.dirty.add(sel.id); };
+    });
+
+    dash.draw('editor-projekt-aufgaben', (el) => {
+      if (st.type !== 'projekt' || !st.row) { el.replaceChildren(); return; }
+      const s = cc.state(el, ['aufgaben']);
+      if (!s.ok) return cc.fallback(el, s, 'Die Aufgaben');
+      const id = pageId(st.row.url);
+      const rows = dash.data('aufgaben').data
+        .filter((a) => cc.list(a.projekt_urls).map(pageId).includes(id))
+        .sort((a, b) => Number(!cc.isOpen(a)) - Number(!cc.isOpen(b)) || cc.byPrioThenDeadline(a, b));
+      el.replaceChildren(...rows.map((r) => cc.taskCard(r, { status: true, next: false, actions: false })));
+      if (!rows.length) el.replaceChildren(cc.emptyItem('Noch keine verknüpften Aufgaben.'));
     });
 
     function setBusy(on) {
       st.busy = on;
-      ['dlg-save', 'dlg-archive', 'dlg-archive-yes'].forEach((id) => { const b = byId(id); if (b) b.disabled = on; });
+      ['dlg-save', 'dlg-archive', 'dlg-archive-yes', 'dlg-delete', 'dlg-delete-yes'].forEach((id) => { const b = byId(id); if (b) b.disabled = on; });
+    }
+    function showConfirm(which) {
+      st.confirm = which;
+      const cfg = TYPES[st.type] || {};
+      const vis = {
+        'dlg-archive': !which && cfg.archive, 'dlg-delete': !which,
+        'dlg-archive-yes': which === 'archive', 'dlg-delete-yes': which === 'delete', 'dlg-confirm-no': !!which
+      };
+      Object.entries(vis).forEach(([id, on]) => { const b = byId(id); if (b) b.hidden = !on; });
     }
 
-    function open(row) {
-      const d = dlg(), f = form();
-      if (!d || !f) return;
-      st.mode = row ? 'edit' : 'new';
-      st.row = row || null;
-      const p = dash.params() || {};
-      f.querySelectorAll('[data-mode]').forEach((x) => { x.hidden = x.getAttribute('data-mode') !== st.mode; });
-      const set = (id, v) => { const el = byId(id); if (el) el.value = v; };
-      set('fld-name', row ? row.name || '' : '');
-      set('fld-status', row ? row.status || 'Offen' : 'Offen');
-      set('fld-prio', row ? row.prio || '' : p.prio || '');
-      set('fld-deadline', row && row.deadline ? cc.day(row.deadline) : '');
-      set('fld-entitaet', row ? row.entitaet || '' : p.entitaet || '');
-      set('fld-next', row ? row.naechster_schritt || '' : '');
-      set('fld-fertig', row ? row.fertig || '' : '');
-      const fc = byId('fld-fortschritt'); if (fc) fc.checked = false;
-      st.projekt = row ? currentProject(row) : '';
-      dash.draw('projekt-optionen');
-      ['dlg-archive-yes', 'dlg-archive-no'].forEach((id) => { const b = byId(id); if (b) b.hidden = true; });
-      const a = byId('dlg-archive'); if (a) a.hidden = false;
+    function isoWeekStart() {
+      const d = new Date(); const dow = d.getDay() || 7;
+      const mon = new Date(d.getFullYear(), d.getMonth(), d.getDate() - dow + 1);
+      const sun = new Date(mon.getFullYear(), mon.getMonth(), mon.getDate() + 6);
+      const t = new Date(Date.UTC(mon.getFullYear(), mon.getMonth(), mon.getDate() + 3));
+      const y1 = new Date(Date.UTC(t.getUTCFullYear(), 0, 1));
+      const wk = Math.ceil(((t - y1) / 864e5 + 1) / 7);
+      const p = (n) => String(n).padStart(2, '0');
+      const iso = `${mon.getFullYear()}-${p(mon.getMonth() + 1)}-${p(mon.getDate())}`;
+      const range = mon.getMonth() === sun.getMonth()
+        ? `${p(mon.getDate())}.–${p(sun.getDate())}.${p(sun.getMonth() + 1)}.${sun.getFullYear()}`
+        : `${p(mon.getDate())}.${p(mon.getMonth() + 1)}.–${p(sun.getDate())}.${p(sun.getMonth() + 1)}.${sun.getFullYear()}`;
+      return { stichtag: iso, zeitraum: `KW${wk} · ${range}` };
+    }
+
+    function fill(cfg, row, prefill) {
+      cfg.fields.forEach((f) => {
+        const el = byId(f.el);
+        if (!el) return;
+        const v = row ? row[f.key] : (prefill[f.key] ?? f.default ?? null);
+        if (f.kind === 'multi') {
+          const arr = cc.list(v);
+          el.querySelectorAll('input[type="checkbox"]').forEach((c) => { c.checked = arr.includes(c.value); });
+        } else if (f.kind === 'relation') {
+          st.projekt = row ? currentProject(row) : (prefill.projekt_url || '');
+        } else if (f.kind === 'date') {
+          el.value = v ? cc.day(v) : '';
+        } else {
+          el.value = v == null ? '' : String(v);
+        }
+      });
+      if (cfg.progress) { const fc = byId(cfg.progress); if (fc) fc.checked = false; }
+    }
+
+    function open(type, row, prefill) {
+      const d = byId('editor'), f = byId('editor-form');
+      const cfg = TYPES[type];
+      if (!d || !f || !cfg) return;
+      st.type = type; st.mode = row ? 'edit' : 'new'; st.row = row || null; st.dirty = new Set();
+      f.querySelectorAll('[data-type]').forEach((x) => {
+        const okType = x.getAttribute('data-type') === type;
+        const m = x.getAttribute('data-mode');
+        x.hidden = !(okType && (!m || m === st.mode));
+      });
+      f.querySelectorAll('[data-mode]:not([data-type])').forEach((x) => { x.hidden = x.getAttribute('data-mode') !== st.mode; });
+      let pre = prefill || {};
+      if (!row && type === 'aufgabe') { const p = dash.params() || {}; pre = { prio: p.prio || null, entitaet: p.entitaet || null, ...pre }; }
+      if (!row && type === 'kennzahl') pre = { ...isoWeekStart(), erfasst_durch: 'Chris', ...pre };
+      fill(cfg, row, pre);
+      ['projekt-optionen', 'editor-notion-link', 'editor-projekt-aufgaben'].forEach((n) => dash.draw(n));
+      showConfirm(null);
       setMsg(f, '');
       setBusy(false);
       if (typeof d.showModal === 'function') { if (!d.open) d.showModal(); } else d.setAttribute('open', '');
-      const n = byId('fld-name'); if (n) n.focus();
+      const first = byId(cfg.fields[0].el); if (first) first.focus();
     }
-    function close() { const d = dlg(); if (!d) return; if (typeof d.close === 'function') d.close(); else d.removeAttribute('open'); }
+    function close() { const d = byId('editor'); if (!d) return; if (typeof d.close === 'function') d.close(); else d.removeAttribute('open'); }
+
+    function readField(f) {
+      const el = byId(f.el);
+      if (!el) return { skip: true };
+      if (f.kind === 'multi') return { value: [...el.querySelectorAll('input[type="checkbox"]')].filter((c) => c.checked).map((c) => c.value) };
+      if (f.kind === 'relation') return { value: st.projekt };
+      const raw = String(el.value || '').trim();
+      if (f.kind === 'date') {
+        if (raw && (!/^\d{4}-\d{2}-\d{2}$/.test(raw) || (el.validity && !el.validity.valid))) return { error: 'baddate' };
+        return { value: raw };
+      }
+      if (f.kind === 'number') {
+        if (raw === '') return { value: null };
+        const n = Number(raw.replace(',', '.'));
+        return Number.isFinite(n) ? { value: n } : { error: 'badnum' };
+      }
+      return { value: raw };
+    }
 
     function collect() {
-      const f = form();
-      const val = (id) => { const el = byId(id); return el ? String(el.value || '').trim() : ''; };
-      const name = val('fld-name');
-      if (!name) { setMsg(f, 'noname'); return null; }
-      const dEl = byId('fld-deadline');
-      const dl = val('fld-deadline');
-      if (dl && (!/^\d{4}-\d{2}-\d{2}$/.test(dl) || (dEl && dEl.validity && !dEl.validity.valid))) { setMsg(f, 'baddate'); return null; }
-      const o = st.row || {};
+      const cfg = TYPES[st.type];
+      const f = byId('editor-form');
       const isNew = st.mode === 'new';
+      const o = st.row || {};
       const props = {};
-      const text = (key, now, before) => { if (isNew ? now : now !== (before || '')) props[key] = now || null; };
-      text('Name', name, o.name);
-      const status = val('fld-status') || 'Offen';
-      if (isNew || status !== (o.status || '')) props['Status'] = status;
-      text('Priorität', val('fld-prio'), o.prio);
-      text('Entität', val('fld-entitaet'), o.entitaet);
-      text('Nächster Schritt', val('fld-next'), o.naechster_schritt);
-      text('Fertigkriterium', val('fld-fertig'), o.fertig);
-      if (isNew ? dl : dl !== (o.deadline ? cc.day(o.deadline) : '')) {
-        props['date:Deadline:start'] = dl || null;
-        if (dl) props['date:Deadline:is_datetime'] = 0;
+      for (const fd of cfg.fields) {
+        if (!isNew && !st.dirty.has(fd.el)) continue;
+        const r = readField(fd);
+        if (r.skip) continue;
+        if (r.error) { setMsg(f, r.error); return null; }
+        const v = r.value;
+        if (fd.required && !v) { setMsg(f, 'noname'); return null; }
+        if (fd.kind === 'multi') {
+          const before = JSON.stringify([...cc.list(o[fd.key])].sort());
+          if (isNew ? v.length : JSON.stringify([...v].sort()) !== before) props[fd.prop] = v.length ? JSON.stringify(v) : null;
+        } else if (fd.kind === 'relation') {
+          if (pageId(v) !== pageId(isNew ? '' : currentProject(o))) {
+            props[fd.prop] = v ? [v] : null;
+            const p = projectsAll().find((x) => pageId(x.url) === pageId(v));
+            const textField = cfg.fields.find((x) => x.key === 'projekt');
+            if (p && textField && !o.projekt && !st.dirty.has(textField.el)) props[textField.prop] = p.name;
+          }
+        } else if (fd.kind === 'date') {
+          const before = o[fd.key] ? cc.day(o[fd.key]) : '';
+          if (isNew ? v : v !== before) {
+            props[`date:${fd.prop}:start`] = v || null;
+            if (v) props[`date:${fd.prop}:is_datetime`] = 0;
+          }
+        } else if (fd.kind === 'number') {
+          const before = o[fd.key] == null || o[fd.key] === '' ? null : Number(o[fd.key]);
+          if (isNew ? v != null : v !== before) props[fd.prop] = v;
+        } else {
+          if (isNew ? v : v !== String(o[fd.key] ?? '')) props[fd.prop] = v || null;
+        }
       }
-      const before = isNew ? '' : currentProject(o);
-      if (pageId(st.projekt) !== pageId(before)) {
-        props['Projekt-Verknuepfung'] = st.projekt ? [st.projekt] : null;
-        const p = projectsAll().find((x) => pageId(x.url) === pageId(st.projekt));
-        if (p && !o.projekt) props['Projekt'] = p.name;
+      if (cfg.progress) {
+        const fc = byId(cfg.progress);
+        if (fc && fc.checked) { props['date:Letzter Fortschritt:start'] = cc.today(); props['date:Letzter Fortschritt:is_datetime'] = 0; }
       }
-      const fc = byId('fld-fortschritt');
-      if (fc && fc.checked) { props['date:Letzter Fortschritt:start'] = cc.today(); props['date:Letzter Fortschritt:is_datetime'] = 0; }
-      if (isNew) props['Archiviert'] = '__NO__';
+      if (isNew && cfg.archive) props['Archiviert'] = '__NO__';
       return props;
     }
 
@@ -1448,16 +1655,12 @@
       return 'error';
     }
 
-    async function write(mode, row, props) {
+    async function call(tool, input) {
       const mcp = await claude.use('mcp');
       if (!mcp) return { key: 'nomcp' };
       try {
-        if (mode === 'edit') {
-          await mcp.callTool('Notion', 'notion-update-page', { page_id: row.url, command: 'update_properties', properties: props, allow_async: false });
-        } else {
-          await mcp.callTool('Notion', 'notion-create-pages', { parent: { data_source_id: DATA_SOURCE }, pages: [{ properties: props }], allow_async: false });
-        }
-        return { key: 'saved' };
+        await mcp.callTool('Notion', tool, input);
+        return { key: 'ok' };
       } catch (e) {
         const key = errKey(e);
         if (key === 'error') {
@@ -1469,60 +1672,92 @@
         return { key };
       }
     }
+    const update = (row, props) => call('notion-update-page', { page_id: row.url, command: 'update_properties', properties: props, allow_async: false });
+    const create = (cfg, props) => call('notion-create-pages', { parent: { data_source_id: cfg.ds }, pages: [{ properties: props }], allow_async: false });
+    const trash = (row) => call('notion-delete-pages', { page_ids: [pageId(row.url)], user_confirmed: true });
 
-    function afterSave() {
-      dash.refresh('aufgaben');
-      setTimeout(() => dash.refresh('aufgaben'), 3000);
+    function reload(type) {
+      const ds = TYPES[type] && TYPES[type].dataset;
+      if (!ds) return;
+      dash.refresh(ds);
+      setTimeout(() => dash.refresh(ds), 3000);
     }
 
-    async function submit(extra) {
+    async function run(action, okKey) {
       if (st.busy) return;
-      const f = form();
-      const props = extra || collect();
-      if (!props) return;
-      if (!Object.keys(props).length) { setMsg(f, 'unchanged'); return; }
+      const f = byId('editor-form');
       setBusy(true);
       setMsg(f, 'saving');
-      const res = await write(st.mode, st.row, props);
+      const res = await action();
       setBusy(false);
-      setMsg(f, res.key);
-      if (res.key === 'saved') {
-        bar('saved', true);
-        afterSave();
-        setTimeout(close, 700);
+      const key = res.key === 'ok' ? okKey : res.key;
+      setMsg(f, key);
+      if (res.key === 'ok') {
+        bar(okKey, true);
+        reload(st.type);
+        setTimeout(close, okKey === 'saved' ? 700 : 1400);
+      } else {
+        showConfirm(null);
       }
+    }
+
+    function submit() {
+      const props = collect();
+      if (!props) return;
+      if (!Object.keys(props).length) { setMsg(byId('editor-form'), 'unchanged'); return; }
+      const cfg = TYPES[st.type];
+      run(() => (st.mode === 'edit' ? update(st.row, props) : create(cfg, props)), 'saved');
     }
 
     async function quickDone(row, btn) {
       if (!row || !row.url) return;
       if (btn) btn.disabled = true;
       bar('saving');
-      const res = await write('edit', row, {
-        'Status': 'Erledigt', 'date:Letzter Fortschritt:start': cc.today(), 'date:Letzter Fortschritt:is_datetime': 0
-      });
-      bar(res.key, res.key === 'saved');
-      if (res.key === 'saved') afterSave();
+      const res = await update(row, { 'Status': 'Erledigt', 'date:Letzter Fortschritt:start': cc.today(), 'date:Letzter Fortschritt:is_datetime': 0 });
+      bar(res.key === 'ok' ? 'saved' : res.key, res.key === 'ok');
+      if (res.key === 'ok') reload('aufgabe');
       else if (btn) btn.disabled = false;
     }
 
-    document.querySelectorAll('#aufgabe-form').forEach((f) => f.addEventListener('submit', (e) => { e.preventDefault(); submit(); }));
+    /* Bedienung */
+    const form = byId('editor-form');
+    if (form) {
+      form.addEventListener('submit', (e) => { e.preventDefault(); submit(); });
+      const markDirty = (e) => {
+        const holder = e.target && e.target.closest ? e.target.closest('[id]') : null;
+        if (!holder) return;
+        const multi = e.target.closest('.cc-multi');
+        st.dirty.add(multi ? multi.id : holder.id);
+      };
+      form.addEventListener('input', markDirty);
+      form.addEventListener('change', markDirty);
+      form.addEventListener('change', (e) => {
+        const cfg = TYPES[st.type];
+        if (!cfg || !cfg.progress || st.mode !== 'edit' || !st.row) return;
+        const statusField = cfg.fields.find((x) => x.key === 'status');
+        if (statusField && e.target && e.target.id === statusField.el && e.target.value !== st.row.status) {
+          const fc = byId(cfg.progress); if (fc) fc.checked = true;
+        }
+      });
+    }
     document.querySelectorAll('#dlg-cancel').forEach((b) => b.addEventListener('click', close));
-    document.querySelectorAll('#fld-status').forEach((s) => s.addEventListener('change', () => {
-      const fc = byId('fld-fortschritt');
-      if (fc && st.mode === 'edit' && st.row && s.value !== st.row.status) fc.checked = true;
-    }));
-    document.querySelectorAll('#dlg-archive').forEach((b) => b.addEventListener('click', () => {
-      b.hidden = true;
-      ['dlg-archive-yes', 'dlg-archive-no'].forEach((id) => { const x = byId(id); if (x) x.hidden = false; });
-    }));
-    document.querySelectorAll('#dlg-archive-no').forEach((b) => b.addEventListener('click', () => {
-      ['dlg-archive-yes', 'dlg-archive-no'].forEach((id) => { const x = byId(id); if (x) x.hidden = true; });
-      const a = byId('dlg-archive'); if (a) a.hidden = false;
-    }));
+    document.querySelectorAll('#dlg-archive').forEach((b) => b.addEventListener('click', () => showConfirm('archive')));
+    document.querySelectorAll('#dlg-delete').forEach((b) => b.addEventListener('click', () => showConfirm('delete')));
+    document.querySelectorAll('#dlg-confirm-no').forEach((b) => b.addEventListener('click', () => showConfirm(null)));
     document.querySelectorAll('#dlg-archive-yes').forEach((b) => b.addEventListener('click', () => {
-      if (st.mode === 'edit' && st.row) submit({ 'Archiviert': '__YES__' });
+      if (st.mode === 'edit' && st.row) run(() => update(st.row, { 'Archiviert': '__YES__' }), 'archived');
     }));
-    document.querySelectorAll('[data-new-task]').forEach((b) => b.addEventListener('click', () => open(null)));
+    document.querySelectorAll('#dlg-delete-yes').forEach((b) => b.addEventListener('click', () => {
+      if (st.mode === 'edit' && st.row) run(() => trash(st.row), 'deleted');
+    }));
+    document.querySelectorAll('[data-new]').forEach((b) => b.addEventListener('click', () => {
+      const type = b.getAttribute('data-new');
+      let prefill = {};
+      if (b.getAttribute('data-prefill') === 'projekt' && st.type === 'projekt' && st.row) {
+        prefill = { projekt_url: st.row.url, entitaet: st.row.entitaet || null };
+      }
+      open(type, null, prefill);
+    }));
 
     return { open, quickDone };
   })();
