@@ -1,6 +1,6 @@
 {
   "title": "Aufgaben (Notion)",
-  "description": "Alle nicht archivierten Aufgaben aus der Datenbank „Aufgaben“, mit Projekt-Verknüpfung.",
+  "description": "Alle nicht archivierten Aufgaben aus der Notion-Ansicht „Aktive Aufgaben“ (Datenbank „Aufgaben“).",
   "link": "https://app.notion.com/p/e5b1de15fd3a4e048fe939e6880159c6",
   "source": {
     "kind": "call",
@@ -8,15 +8,10 @@
     "tool": "notion-query-data-sources",
     "args": {
       "data": {
-        "mode": "sql",
-        "data_source_urls": [
-          "collection://e7c61ee2-5e31-4a18-9fee-64fbf2c36764"
-        ],
-        "query": "SELECT \"Aufgaben-ID\" AS id, \"Name\" AS name, \"Status\" AS status, \"Priorität\" AS prio, \"Entität\" AS entitaet, \"Wirkung\" AS wirkung, \"Projekt\" AS projekt, \"Projekt-Verknuepfung\" AS projekt_urls, \"Nächster Schritt\" AS naechster_schritt, \"Fertigkriterium\" AS fertig, \"date:Deadline:start\" AS deadline, \"date:Letzter Fortschritt:start\" AS fortschritt, url FROM \"collection://e7c61ee2-5e31-4a18-9fee-64fbf2c36764\" WHERE \"Archiviert\" IS NULL OR \"Archiviert\" <> '__YES__' ORDER BY \"Aufgaben-ID\""
+        "mode": "view",
+        "view_url": "https://www.notion.so/e5b1de15fd3a4e048fe939e6880159c6?v=2618173a28c442e8877e224e36f80e73",
+        "page_size": 100
       }
     }
-  },
-  "langs": {
-    "query": "sql"
   }
 }

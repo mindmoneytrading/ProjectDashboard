@@ -6,6 +6,16 @@ Live-Dashboard für das Notion **Control Centre** (Projekte, Aufgaben, Content, 
 
 Das Dashboard ist ein Claude-Artifact vom Typ „Data“. Es liest die Notion-Datenbanken bei jedem Öffnen live über den Notion-Connector des jeweiligen Betrachters. Antworten, die jünger als 10 Minuten sind, werden wiederverwendet.
 
+Die Abfragen nutzen gespeicherte **Notion-Ansichten** (View-Modus), nicht SQL: SQL-Abfragen haben unterhalb des Business-Plans ein gemeinsames Kontingent pro Workspace, das schnell aufgebraucht ist. Je Quelle wandelt ein `dash.loader` in `index.html` die Antwort in Zeilen um (alle Seiten, umbenannte Spalten). Wer Filter oder Spalten einer verwendeten Ansicht in Notion ändert, ändert damit auch, was das Dashboard zeigt.
+
+| Quelle | Notion-Ansicht |
+| --- | --- |
+| projekte | Projekte › Aktive Projekte |
+| aufgaben | Aufgaben › Aktive Aufgaben |
+| content | Content › Default view |
+| kennzahlen | Kennzahlen › Default view |
+| routinen | Routinen › Default view |
+
 ## Ansichten
 
 | Register | Inhalt |
@@ -24,7 +34,7 @@ dashboard/
   index.html                 Seite (HTML, CSS, Skripte), gespeichert als files/index.html
   store/
     dash.meta.json           Titel und Sprache
-    datasets.<id>.json       Live-Abfragen (Notion SQL) je Datenbank
+    datasets.<id>.json       Live-Abfragen (Notion-Ansicht im View-Modus) je Datenbank
 tools/
   pack-page.py               packt index.html als {"text": …} für den Upload
 ```

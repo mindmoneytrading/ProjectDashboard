@@ -595,6 +595,127 @@
 </script>
 
 <script>
+  /* Loader: Notion-Ansichten (View-Modus, ohne SQL-Kontingent) lesen, alle Seiten holen und Spalten umbenennen */
+  dash.loader('projekte', {
+    description: 'Liest alle Seiten der Notion-Ansicht „Aktive Projekte“, benennt die Spalten um und sortiert nach Bereich und Projekt-ID.',
+    fn: async ({ answer, call, args }) => {
+      let page = answer;
+      if (!page || !Array.isArray(page.results)) throw new Error(typeof page === 'string' ? page : 'Notion hat keine Zeilen geliefert.');
+      const all = [...page.results];
+      while (page.has_more && page.next_cursor) {
+        page = await call('notion-query-data-sources', { data: { ...args.data, start_cursor: page.next_cursor } });
+        if (!page || !Array.isArray(page.results)) break;
+        all.push(...page.results);
+      }
+      const num = (v) => (v == null || v === '' ? null : Number(v));
+      const rows = all.filter((r) => r.Archiviert !== '__YES__').map((r) => ({
+        id: num(r['Projekt-ID']), name: r.Name ?? null, status: r.Status ?? null, prio: r['Priorität'] ?? null,
+        bereich: r.Bereich ?? null, entitaet: r['Entität'] ?? null, ziel: r.Zielbeitrag ?? null, blocker: r.Blocker ?? null,
+        meilenstein: r['Nächster Meilenstein'] ?? null, deadline: r['date:Deadline:start'] ?? null,
+        fortschritt: r['date:Letzter Fortschritt:start'] ?? null, url: r.url ?? null
+      }));
+      rows.sort((a, b) => String(a.bereich).localeCompare(String(b.bereich)) || a.id - b.id);
+      return { columns: ['id', 'name', 'status', 'prio', 'bereich', 'entitaet', 'ziel', 'blocker', 'meilenstein', 'deadline', 'fortschritt', 'url'], rows };
+    }
+  });
+
+  dash.loader('aufgaben', {
+    description: 'Liest alle Seiten der Notion-Ansicht „Aktive Aufgaben“, benennt die Spalten um und sortiert nach Aufgaben-ID.',
+    fn: async ({ answer, call, args }) => {
+      let page = answer;
+      if (!page || !Array.isArray(page.results)) throw new Error(typeof page === 'string' ? page : 'Notion hat keine Zeilen geliefert.');
+      const all = [...page.results];
+      while (page.has_more && page.next_cursor) {
+        page = await call('notion-query-data-sources', { data: { ...args.data, start_cursor: page.next_cursor } });
+        if (!page || !Array.isArray(page.results)) break;
+        all.push(...page.results);
+      }
+      const num = (v) => (v == null || v === '' ? null : Number(v));
+      const rows = all.filter((r) => r.Archiviert !== '__YES__').map((r) => ({
+        id: num(r['Aufgaben-ID']), name: r.Name ?? null, status: r.Status ?? null, prio: r['Priorität'] ?? null,
+        entitaet: r['Entität'] ?? null, wirkung: r.Wirkung ?? null, projekt: r.Projekt ?? null,
+        projekt_urls: r['Projekt-Verknuepfung'] ?? null, naechster_schritt: r['Nächster Schritt'] ?? null,
+        fertig: r.Fertigkriterium ?? null, deadline: r['date:Deadline:start'] ?? null,
+        fortschritt: r['date:Letzter Fortschritt:start'] ?? null, url: r.url ?? null
+      }));
+      rows.sort((a, b) => a.id - b.id);
+      return { columns: ['id', 'name', 'status', 'prio', 'entitaet', 'wirkung', 'projekt', 'projekt_urls', 'naechster_schritt', 'fertig', 'deadline', 'fortschritt', 'url'], rows };
+    }
+  });
+
+  dash.loader('content', {
+    description: 'Liest alle Seiten der Content-Ansicht, benennt die Spalten um und sortiert nach Veröffentlichungsdatum (neueste zuerst).',
+    fn: async ({ answer, call, args }) => {
+      let page = answer;
+      if (!page || !Array.isArray(page.results)) throw new Error(typeof page === 'string' ? page : 'Notion hat keine Zeilen geliefert.');
+      const all = [...page.results];
+      while (page.has_more && page.next_cursor) {
+        page = await call('notion-query-data-sources', { data: { ...args.data, start_cursor: page.next_cursor } });
+        if (!page || !Array.isArray(page.results)) break;
+        all.push(...page.results);
+      }
+      const num = (v) => (v == null || v === '' ? null : Number(v));
+      const rows = all.map((r) => ({
+        id: num(r['Content-ID']), name: r.Name ?? null, status: r.Status ?? null, prio: r['Priorität'] ?? null,
+        format: r.Format ?? null, kanal: r.Kanal ?? null, ziel: r.Ziel ?? null, entitaet: r['Entität'] ?? null,
+        datum: r['date:Veröffentlichung:start'] ?? null, aufrufe: num(r.Aufrufe),
+        naechster_schritt: r['Nächster Schritt'] ?? null, url: r.url ?? null
+      }));
+      rows.sort((a, b) => String(b.datum || '').localeCompare(String(a.datum || '')) || b.id - a.id);
+      return { columns: ['id', 'name', 'status', 'prio', 'format', 'kanal', 'ziel', 'entitaet', 'datum', 'aufrufe', 'naechster_schritt', 'url'], rows };
+    }
+  });
+
+  dash.loader('kennzahlen', {
+    description: 'Liest alle Wochenzeilen der Kennzahlen-Ansicht, wandelt Zahlen um (leer bleibt leer) und sortiert nach Stichtag (neueste zuerst).',
+    fn: async ({ answer, call, args }) => {
+      let page = answer;
+      if (!page || !Array.isArray(page.results)) throw new Error(typeof page === 'string' ? page : 'Notion hat keine Zeilen geliefert.');
+      const all = [...page.results];
+      while (page.has_more && page.next_cursor) {
+        page = await call('notion-query-data-sources', { data: { ...args.data, start_cursor: page.next_cursor } });
+        if (!page || !Array.isArray(page.results)) break;
+        all.push(...page.results);
+      }
+      const num = (v) => (v == null || v === '' ? null : Number(v));
+      const rows = all.map((r) => ({
+        zeitraum: r.Zeitraum ?? null, stichtag: r['date:Stichtag:start'] ?? null, datenstatus: r.Datenstatus ?? null,
+        umsatz_gebucht: num(r['Umsatz gebucht EUR']), umsatz_realisiert: num(r['Umsatz realisiert EUR']),
+        coaching_anfragen: num(r['Coaching Anfragen']), coaching_buchungen: num(r['Coaching Buchungen']),
+        gespraeche: num(r.Verkaufsgespraeche), leads: num(r['Neue Leads']), content_assets: num(r['Content Assets']),
+        posts: num(r.Posts), video_views: num(r['Video Views']), webinar_reg: num(r['Webinar Registrierungen']),
+        community_neu: num(r['Neue Community Mitglieder']), newsletter: num(r['Newsletter Anmeldungen']),
+        erfasst_durch: r['Erfasst durch'] ?? null, notiz: r.Notiz ?? null, quelle: r.Quelle ?? null, url: r.url ?? null
+      }));
+      rows.sort((a, b) => String(b.stichtag || '').localeCompare(String(a.stichtag || '')));
+      return { columns: ['zeitraum', 'stichtag', 'datenstatus', 'umsatz_gebucht', 'umsatz_realisiert', 'coaching_anfragen', 'coaching_buchungen', 'gespraeche', 'leads', 'content_assets', 'posts', 'video_views', 'webinar_reg', 'community_neu', 'newsletter', 'erfasst_durch', 'notiz', 'quelle', 'url'], rows };
+    }
+  });
+
+  dash.loader('routinen', {
+    description: 'Liest alle Seiten der Routinen-Ansicht, benennt die Spalten um und sortiert nach Routinen-ID.',
+    fn: async ({ answer, call, args }) => {
+      let page = answer;
+      if (!page || !Array.isArray(page.results)) throw new Error(typeof page === 'string' ? page : 'Notion hat keine Zeilen geliefert.');
+      const all = [...page.results];
+      while (page.has_more && page.next_cursor) {
+        page = await call('notion-query-data-sources', { data: { ...args.data, start_cursor: page.next_cursor } });
+        if (!page || !Array.isArray(page.results)) break;
+        all.push(...page.results);
+      }
+      const num = (v) => (v == null || v === '' ? null : Number(v));
+      const rows = all.map((r) => ({
+        id: num(r['Routinen-ID']), name: r.Name ?? null, status: r.Status ?? null, rhythmus: r.Rhythmus ?? null,
+        naechste_aktion: r['Nächste Aktion'] ?? null, ergebnismass: r['Ergebnismaß'] ?? null,
+        letzte: r['date:Letzte Durchführung:start'] ?? null, naechste: r['date:Nächste Durchführung:start'] ?? null, url: r.url ?? null
+      }));
+      rows.sort((a, b) => a.id - b.id);
+      return { columns: ['id', 'name', 'status', 'rhythmus', 'naechste_aktion', 'ergebnismass', 'letzte', 'naechste', 'url'], rows };
+    }
+  });
+</script>
+
+<script>
   /* Berechnungen aus den Notion-Quellen */
   dash.calc('kpis', {
     title: 'Kennzahlen der Aufgaben und Projekte',
@@ -626,9 +747,10 @@
     inputs: ['projekte', 'aufgaben'],
     fn: (projekte, aufgaben) => {
       const offen = ['Offen', 'In Arbeit', 'Blockiert'];
-      const links = (v) => { try { const a = JSON.parse(v || '[]'); return Array.isArray(a) ? a : []; } catch { return []; } };
+      const pageId = (u) => ((String(u || '').match(/[0-9a-f]{32}/i) || [''])[0]).toLowerCase();
+      const links = (v) => { try { const a = JSON.parse(v || '[]'); return Array.isArray(a) ? a.map(pageId) : []; } catch { return []; } };
       return projekte.map((p) => {
-        const ts = aufgaben.filter((a) => links(a.projekt_urls).includes(p.url));
+        const ts = aufgaben.filter((a) => links(a.projekt_urls).includes(pageId(p.url)));
         const zaehlbar = ts.filter((a) => a.status !== 'Geparkt');
         return {
           id: p.id,

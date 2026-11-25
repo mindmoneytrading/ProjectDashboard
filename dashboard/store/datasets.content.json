@@ -1,6 +1,6 @@
 {
   "title": "Content (Notion)",
-  "description": "Alle Einträge der Content-Datenbank mit Status, Format, Kanal und Veröffentlichungsdatum.",
+  "description": "Alle Einträge der Content-Datenbank (Standardansicht) mit Status, Format, Kanal und Veröffentlichungsdatum.",
   "link": "https://app.notion.com/p/6c148dca6324401d91f93e45c424973e",
   "source": {
     "kind": "call",
@@ -8,15 +8,10 @@
     "tool": "notion-query-data-sources",
     "args": {
       "data": {
-        "mode": "sql",
-        "data_source_urls": [
-          "collection://3526a97b-fc76-474e-be72-88a52cc8de41"
-        ],
-        "query": "SELECT \"Content-ID\" AS id, \"Name\" AS name, \"Status\" AS status, \"Priorität\" AS prio, \"Format\" AS format, \"Kanal\" AS kanal, \"Ziel\" AS ziel, \"Entität\" AS entitaet, \"date:Veröffentlichung:start\" AS datum, \"Aufrufe\" AS aufrufe, \"Nächster Schritt\" AS naechster_schritt, url FROM \"collection://3526a97b-fc76-474e-be72-88a52cc8de41\" ORDER BY \"date:Veröffentlichung:start\" DESC, \"Content-ID\" DESC"
+        "mode": "view",
+        "view_url": "https://www.notion.so/6c148dca6324401d91f93e45c424973e?v=0576cadd8c8944dfbe9bfa0333876295",
+        "page_size": 100
       }
     }
-  },
-  "langs": {
-    "query": "sql"
   }
 }

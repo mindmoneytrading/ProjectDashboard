@@ -1,6 +1,6 @@
 {
   "title": "Kennzahlen je Woche (Notion)",
-  "description": "Wochenzeilen der Datenbank „Kennzahlen“, neueste zuerst. Leere Felder heißen unbekannt, nicht null.",
+  "description": "Wochenzeilen der Datenbank „Kennzahlen“ (Standardansicht). Leere Felder heißen unbekannt, nicht null.",
   "link": "https://app.notion.com/p/95601203fc5046a1be27f7ce7a51f1e8",
   "source": {
     "kind": "call",
@@ -8,15 +8,10 @@
     "tool": "notion-query-data-sources",
     "args": {
       "data": {
-        "mode": "sql",
-        "data_source_urls": [
-          "collection://bf970300-8cec-401b-93e3-58a6dbe1e316"
-        ],
-        "query": "SELECT \"Zeitraum\" AS zeitraum, \"date:Stichtag:start\" AS stichtag, \"Datenstatus\" AS datenstatus, \"Umsatz gebucht EUR\" AS umsatz_gebucht, \"Umsatz realisiert EUR\" AS umsatz_realisiert, \"Coaching Anfragen\" AS coaching_anfragen, \"Coaching Buchungen\" AS coaching_buchungen, \"Verkaufsgespraeche\" AS gespraeche, \"Neue Leads\" AS leads, \"Content Assets\" AS content_assets, \"Posts\" AS posts, \"Video Views\" AS video_views, \"Webinar Registrierungen\" AS webinar_reg, \"Neue Community Mitglieder\" AS community_neu, \"Newsletter Anmeldungen\" AS newsletter, \"Erfasst durch\" AS erfasst_durch, \"Notiz\" AS notiz, \"Quelle\" AS quelle, url FROM \"collection://bf970300-8cec-401b-93e3-58a6dbe1e316\" ORDER BY \"date:Stichtag:start\" DESC"
+        "mode": "view",
+        "view_url": "https://www.notion.so/95601203fc5046a1be27f7ce7a51f1e8?v=c8a18575038143c299a8d8cbfe0663e9",
+        "page_size": 100
       }
     }
-  },
-  "langs": {
-    "query": "sql"
   }
 }

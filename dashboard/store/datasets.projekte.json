@@ -1,6 +1,6 @@
 {
   "title": "Projekte (Notion)",
-  "description": "Alle nicht archivierten Projekte aus der Datenbank „Projekte“ im Control Centre.",
+  "description": "Alle nicht archivierten Projekte aus der Notion-Ansicht „Aktive Projekte“ (Datenbank „Projekte“).",
   "link": "https://app.notion.com/p/63d45f7342aa40f6976aa78014ab5708",
   "source": {
     "kind": "call",
@@ -8,15 +8,10 @@
     "tool": "notion-query-data-sources",
     "args": {
       "data": {
-        "mode": "sql",
-        "data_source_urls": [
-          "collection://5da8040d-bbd2-47b1-9eec-c39d3acca8d0"
-        ],
-        "query": "SELECT \"Projekt-ID\" AS id, \"Name\" AS name, \"Status\" AS status, \"Priorität\" AS prio, \"Bereich\" AS bereich, \"Entität\" AS entitaet, \"Zielbeitrag\" AS ziel, \"Blocker\" AS blocker, \"Nächster Meilenstein\" AS meilenstein, \"date:Deadline:start\" AS deadline, \"date:Letzter Fortschritt:start\" AS fortschritt, url FROM \"collection://5da8040d-bbd2-47b1-9eec-c39d3acca8d0\" WHERE \"Archiviert\" IS NULL OR \"Archiviert\" <> '__YES__' ORDER BY \"Bereich\", \"Projekt-ID\""
+        "mode": "view",
+        "view_url": "https://www.notion.so/63d45f7342aa40f6976aa78014ab5708?v=ed0c1f87aa7d45039dcad3724be92835",
+        "page_size": 100
       }
     }
-  },
-  "langs": {
-    "query": "sql"
   }
 }
