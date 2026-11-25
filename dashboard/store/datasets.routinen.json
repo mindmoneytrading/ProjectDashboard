@@ -1,0 +1,22 @@
+{
+  "title": "Routinen (Notion)",
+  "description": "Wiederkehrende Abläufe aus der Datenbank „Routinen“ mit Rhythmus und nächster Durchführung.",
+  "link": "https://app.notion.com/p/3425622caf924d4bb9b336d27015716d",
+  "source": {
+    "kind": "call",
+    "connector": "Notion",
+    "tool": "notion-query-data-sources",
+    "args": {
+      "data": {
+        "mode": "sql",
+        "data_source_urls": [
+          "collection://9bb7dfe0-0820-4de2-bed2-471a4b77f927"
+        ],
+        "query": "SELECT \"Routinen-ID\" AS id, \"Name\" AS name, \"Status\" AS status, \"Rhythmus\" AS rhythmus, \"Nächste Aktion\" AS naechste_aktion, \"Ergebnismaß\" AS ergebnismass, \"date:Letzte Durchführung:start\" AS letzte, \"date:Nächste Durchführung:start\" AS naechste, url FROM \"collection://9bb7dfe0-0820-4de2-bed2-471a4b77f927\" ORDER BY \"Routinen-ID\""
+      }
+    }
+  },
+  "langs": {
+    "query": "sql"
+  }
+}

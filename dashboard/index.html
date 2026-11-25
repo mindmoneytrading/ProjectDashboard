@@ -1,0 +1,1118 @@
+<meta name="dash-one-writer">
+<meta name="dash-form" content="dashboard">
+<style>
+  /* Layout: Kopf mit Lage-Satz, Kennzahlen-Leiste, darunter Register (Übersicht, Aufgaben, Projekte, Content, Kennzahlen, Routinen). */
+  .cc {
+    --cc-gap: var(--cds-gap-lg);
+    --cc-muss: var(--color-bad);
+    --cc-soll: var(--color-warn);
+    --cc-kann: var(--color-fg-muted);
+    display: grid;
+    gap: var(--cds-gap-xl);
+    font-family: var(--font-anthropic-sans);
+    color: var(--color-fg);
+  }
+  .cc a { color: inherit; text-decoration: none; }
+  .cc a:hover { text-decoration: underline; text-underline-offset: 2px; }
+  .cc a:focus-visible, .cc button:focus-visible, .cc summary:focus-visible, .cc input:focus-visible {
+    outline: 2px solid var(--color-fg); outline-offset: 2px; border-radius: 4px;
+  }
+
+  /* Kopf */
+  .cc-head { display: grid; gap: var(--cds-gap-sm); max-width: 72ch; }
+  .cc-eyebrow {
+    margin: 0; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted);
+    letter-spacing: 0.06em; text-transform: uppercase;
+  }
+  .cc-title {
+    margin: 0; font-family: var(--font-anthropic-serif); font-weight: 400;
+    font-size: var(--cds-font-size-title); line-height: 1.15; text-wrap: balance;
+  }
+  .cc-lede { margin: 0; font-size: var(--cds-font-size-body); line-height: 1.55; color: var(--color-fg-muted); }
+  .cc-lede b { color: var(--color-fg); font-weight: var(--cds-font-weight-medium); font-variant-numeric: tabular-nums; }
+
+  /* Kennzahlen-Leiste */
+  .cc-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--cds-gap-md); }
+  .cc-kpi {
+    display: grid; gap: var(--cds-gap-xs); align-content: start; min-width: 0;
+    background: var(--color-panel); border: 1px solid var(--color-border-line);
+    border-radius: var(--cds-radius); padding: var(--cds-pad-md) var(--cds-pad-lg);
+  }
+  .cc-kpi-label { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); letter-spacing: 0.02em; }
+  .cc-kpi-value {
+    font-family: var(--font-anthropic-serif); font-weight: 400; font-size: 2rem; line-height: 1.1;
+    font-variant-numeric: tabular-nums; min-height: 1.1em;
+  }
+  .cc-kpi-note { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); line-height: 1.4; }
+  .cc-kpi.is-bad .cc-kpi-value { color: var(--color-bad); }
+  .cc-kpi.is-warn .cc-kpi-value { color: var(--color-warn); }
+  .is-unknown { color: var(--color-fg-muted); }
+
+  /* Register */
+  .cc-tabs {
+    display: flex; gap: var(--cds-gap-xs); overflow-x: auto; scrollbar-width: none;
+    border-bottom: 1px solid var(--color-border-line); margin-bottom: calc(-1 * var(--cds-gap-md));
+  }
+  .cc-tabs::-webkit-scrollbar { display: none; }
+  .cc-tab {
+    flex: 0 0 auto; appearance: none; background: none; border: 0; cursor: pointer;
+    font: inherit; font-size: var(--cds-font-size-body); color: var(--color-fg-muted);
+    padding: var(--cds-pad-sm) var(--cds-pad-md); border-bottom: 2px solid transparent; margin-bottom: -1px;
+  }
+  .cc-tab:hover { color: var(--color-fg); }
+  .cc-tab.is-active { color: var(--color-fg); border-bottom-color: var(--color-fg); font-weight: var(--cds-font-weight-medium); }
+
+  .cc-panel { display: grid; gap: var(--cds-gap-xl); }
+  .cc-block { display: grid; gap: var(--cds-gap-md); min-width: 0; }
+  .cc-block-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--cds-gap-sm); }
+  .cc-h2 { margin: 0; font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); text-wrap: balance; }
+  .cc-sub { margin: 0; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); line-height: 1.45; }
+  .cc-two { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: var(--cds-gap-xl); align-items: start; }
+
+  /* Listen und Karten */
+  .cc-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--cds-gap-sm); min-height: 3rem; }
+  .cc-empty { color: var(--color-fg-muted); font-size: var(--cds-font-size-body); margin: 0; padding: var(--cds-pad-sm) 0; }
+  .cc-task, .cc-card {
+    display: grid; gap: var(--cds-gap-xs); min-width: 0;
+    background: var(--color-bg); border: 1px solid var(--color-border-line);
+    border-radius: var(--cds-radius); padding: var(--cds-pad-sm) var(--cds-pad-md);
+  }
+  .cc-card { background: var(--color-panel); padding: var(--cds-pad-md) var(--cds-pad-lg); gap: var(--cds-gap-sm); }
+  .cc-task-title, .cc-card-title { font-weight: var(--cds-font-weight-medium); line-height: 1.35; overflow-wrap: anywhere; }
+  .cc-card-title { font-size: var(--cds-font-size-heading); }
+  .cc-meta { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs); align-items: center; }
+  .cc-next {
+    margin: 0; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); line-height: 1.45;
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere;
+  }
+  .cc-label { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); letter-spacing: 0.04em; text-transform: uppercase; }
+  .cc-note {
+    margin: 0; font-size: var(--cds-font-size-caption); line-height: 1.45; color: var(--color-fg);
+    border-left: 2px solid var(--color-warn); padding-left: var(--cds-pad-sm);
+    display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere;
+  }
+
+  /* Pillen */
+  .cc-pill {
+    display: inline-flex; align-items: center; gap: 5px; white-space: nowrap;
+    font-size: var(--cds-font-size-caption); line-height: 1.5; color: var(--color-fg);
+    border: 1px solid var(--color-border-line); border-radius: 999px; padding: 0 8px;
+  }
+  .cc-pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--tone, var(--color-fg-muted)); flex: none; }
+  .cc-pill.no-dot::before { display: none; }
+  .cc-chip { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); white-space: nowrap; }
+  .cc-chip + .cc-chip::before { content: "· "; }
+  .tone-muss { --tone: var(--cc-muss); }
+  .tone-soll { --tone: var(--cc-soll); }
+  .tone-kann { --tone: var(--cc-kann); }
+  .tone-ok { --tone: var(--color-ok); }
+  .tone-warn { --tone: var(--color-warn); }
+  .tone-bad { --tone: var(--color-bad); }
+  .tone-run { --tone: var(--color-fg); }
+  .tone-muted { --tone: var(--color-fg-muted); }
+  .cc-due { font-size: var(--cds-font-size-caption); white-space: nowrap; font-variant-numeric: tabular-nums; color: var(--color-fg-muted); }
+  .cc-due.is-bad { color: var(--color-bad); font-weight: var(--cds-font-weight-medium); }
+  .cc-due.is-warn { color: var(--color-warn); font-weight: var(--cds-font-weight-medium); }
+
+  /* Fortschritt */
+  .cc-progress { display: grid; grid-template-columns: 1fr auto; gap: var(--cds-gap-sm); align-items: center; }
+  .cc-bar { height: 6px; border-radius: 3px; background: var(--color-border-line); overflow: hidden; }
+  .cc-bar > span { display: block; height: 100%; border-radius: 3px; }
+  .cc-progress-text { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  /* Projekte kompakt */
+  .cc-prow {
+    display: grid; grid-template-columns: minmax(0, 1fr) minmax(70px, 28%) auto; gap: var(--cds-gap-md); align-items: center;
+    padding: var(--cds-pad-sm) 0; border-bottom: 1px solid var(--color-border-line);
+  }
+  .cc-prow:last-child { border-bottom: 0; }
+  .cc-prow-name { display: grid; gap: 2px; min-width: 0; }
+  .cc-prow-name a { font-weight: var(--cds-font-weight-medium); overflow-wrap: anywhere; }
+
+  /* Projekte nach Bereich */
+  .cc-bereich { display: grid; gap: var(--cds-gap-md); }
+  .cc-bereich-head { display: flex; align-items: center; gap: var(--cds-gap-sm); }
+  .cc-swatch { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+  .cc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: var(--cds-gap-md); }
+  .cc-card-foot { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm) var(--cds-gap-md); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .cc-card-foot .is-warn { color: var(--color-warn); }
+
+  /* Kanban */
+  .cc-filters { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm); align-items: center; }
+  .cc-search {
+    flex: 1 1 200px; min-width: 0; font: inherit; font-size: var(--cds-font-size-body); color: var(--color-fg);
+    background-color: var(--color-bg); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius);
+    padding: 6px 10px;
+  }
+  .cc-btn {
+    font: inherit; font-size: var(--cds-font-size-caption); color: var(--color-fg); cursor: pointer;
+    background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: 6px 12px;
+  }
+  .cc-board { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: var(--cds-gap-md); align-items: start; }
+  .cc-col {
+    display: grid; gap: var(--cds-gap-sm); min-width: 0; align-content: start;
+    background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-sm);
+  }
+  .cc-col-head { display: flex; justify-content: space-between; align-items: baseline; gap: var(--cds-gap-sm); padding: 2px 4px; }
+  .cc-col-head h3 { margin: 0; font-size: var(--cds-font-size-body); font-weight: var(--cds-font-weight-medium); }
+  .cc-count { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); font-variant-numeric: tabular-nums; }
+  .cc-details > summary { cursor: pointer; font-size: var(--cds-font-size-body); color: var(--color-fg-muted); padding: var(--cds-pad-xs) 0; }
+  .cc-details[open] > summary { margin-bottom: var(--cds-gap-sm); }
+
+  /* Content-Pipeline */
+  .cc-pipe { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); overflow: hidden; }
+  .cc-pipe > div { display: grid; gap: 2px; padding: var(--cds-pad-sm) var(--cds-pad-md); background: var(--color-panel); border-right: 1px solid var(--color-border-line); min-width: 0; }
+  .cc-pipe > div:last-child { border-right: 0; }
+  .cc-pipe-n { font-family: var(--font-anthropic-serif); font-size: 1.6rem; line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .cc-pipe-l { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); overflow-wrap: anywhere; }
+  @media (max-width: 460px) {
+    .cc-pipe { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .cc-pipe > div { border-bottom: 1px solid var(--color-border-line); }
+  }
+
+  /* Tabellen */
+  .cc-tablewrap { overflow-x: auto; border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); }
+  .cc-table { width: 100%; border-collapse: collapse; font-size: var(--cds-font-size-body); }
+  .cc-table th, .cc-table td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--color-border-line); vertical-align: top; }
+  .cc-table th { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); font-weight: var(--cds-font-weight-medium); background: var(--color-panel); white-space: nowrap; }
+  .cc-table tbody tr:last-child td { border-bottom: 0; }
+  .cc-table td.num, .cc-table th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .cc-table td.nowrap { white-space: nowrap; }
+  .cc-table td.title { min-width: 200px; }
+  .cc-notiz { display: grid; gap: var(--cds-gap-sm); max-width: 75ch; }
+  .cc-notiz p { margin: 0; font-size: var(--cds-font-size-body); line-height: 1.55; overflow-wrap: anywhere; }
+
+  /* Zeitleiste */
+  .cc-chart { position: relative; min-height: 120px; }
+  .cc-chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .cc-chart .tick text { fill: var(--cds-text-secondary); font-size: var(--cds-font-size-caption); font-family: var(--font-anthropic-sans); }
+  .cc-chart .domain, .cc-chart .tick line { stroke: var(--cds-chart-axis); }
+  .cc-tip {
+    position: absolute; z-index: 3; pointer-events: none; max-width: 260px;
+    background: var(--cds-surface-popover); border: 1px solid var(--cds-border); box-shadow: var(--cds-shadow-popover);
+    border-radius: var(--cds-radius); padding: 8px 10px; font-size: var(--cds-font-size-caption); line-height: 1.4;
+  }
+  .cc-tip strong { display: block; font-weight: var(--cds-font-weight-medium); color: var(--color-fg); overflow-wrap: anywhere; }
+  .cc-tip span { color: var(--cds-text-secondary); }
+  .cc-legend { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs) var(--cds-gap-md); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .cc-legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .cc-legend i { display: inline-block; width: 9px; height: 9px; background: var(--tone); }
+  .cc-legend i.circle { border-radius: 50%; }
+  .cc-legend i.diamond { transform: rotate(45deg) scale(0.85); }
+  .cc-legend i.line { width: 2px; height: 12px; background: var(--cds-chart-reference); }
+
+  .cc-foot { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin: 0; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .cc-bar > span { transition: width var(--cds-dur-slow) var(--cds-ease-out); }
+  }
+  @media print {
+    .cc-tabs, .cc-filters { display: none; }
+    .cc-panel { break-before: page; }
+    .cc-next, .cc-note { -webkit-line-clamp: unset; display: block; }
+  }
+</style>
+
+<div class="cc" lang="de">
+  <header class="cc-head" id="kopf">
+    <p class="cc-eyebrow">Control Centre · <span data-draw="heute">—</span></p>
+    <h1 class="cc-title">Projekte und Aufgaben</h1>
+    <p class="cc-lede" id="lage">
+      <b data-draw="kpi" data-source="kpis" data-field="offen" data-row="0">—</b> Aufgaben sind offen, davon
+      <b data-draw="kpi" data-source="kpis" data-field="muss_offen" data-row="0">—</b> mit Priorität MUSS.
+      <span data-case="over" hidden>Überfällig sind <b data-draw="kpi" data-source="kpis" data-field="ueberfaellig" data-row="0">—</b>, bitte erledigen, neu terminieren oder parken.</span>
+      <span data-case="none" hidden>Nichts ist überfällig.</span>
+      <span data-draw="lage"></span>
+    </p>
+  </header>
+
+  <section class="cc-kpis" id="kennzahlen-leiste" aria-label="Kennzahlen" data-fetchpriority="high">
+    <div class="cc-kpi" id="kpi-offen">
+      <span class="cc-kpi-label">Offene Aufgaben</span>
+      <span class="cc-kpi-value dash-skeleton" data-draw="kpi" data-source="kpis" data-field="offen" data-row="0">—</span>
+      <span class="cc-kpi-note">Offen, In Arbeit, Blockiert</span>
+    </div>
+    <div class="cc-kpi" id="kpi-muss" data-alert="warn">
+      <span class="cc-kpi-label">MUSS offen</span>
+      <span class="cc-kpi-value dash-skeleton" data-draw="kpi" data-source="kpis" data-field="muss_offen" data-row="0">—</span>
+      <span class="cc-kpi-note">Ziel: eine MUSS pro Tag</span>
+    </div>
+    <div class="cc-kpi" id="kpi-ueberfaellig" data-alert="bad">
+      <span class="cc-kpi-label">Überfällig</span>
+      <span class="cc-kpi-value dash-skeleton" data-draw="kpi" data-source="kpis" data-field="ueberfaellig" data-row="0">—</span>
+      <span class="cc-kpi-note">Deadline vor heute</span>
+    </div>
+    <div class="cc-kpi" id="kpi-woche">
+      <span class="cc-kpi-label">Fällig in 7 Tagen</span>
+      <span class="cc-kpi-value dash-skeleton" data-draw="kpi" data-source="kpis" data-field="faellig_7" data-row="0">—</span>
+      <span class="cc-kpi-note">davon heute <b data-draw="kpi" data-source="kpis" data-field="heute_faellig" data-row="0">—</b></span>
+    </div>
+    <div class="cc-kpi" id="kpi-projekte">
+      <span class="cc-kpi-label">Aktive Projekte</span>
+      <span class="cc-kpi-value dash-skeleton" data-draw="kpi" data-source="kpis" data-field="projekte_aktiv" data-row="0">—</span>
+      <span class="cc-kpi-note"><b data-draw="kpi" data-source="kpis" data-field="projekte_still" data-row="0">—</b> davon seit über 7 Tagen ohne Fortschritt</span>
+    </div>
+    <div class="cc-kpi" id="kpi-umsatz">
+      <span class="cc-kpi-label">Umsatz gebucht · <span data-draw="kz" data-source="kennzahlen" data-field="zeitraum" data-row="0">—</span></span>
+      <span class="cc-kpi-value dash-skeleton" data-draw="kz" data-format="eur" data-source="kennzahlen" data-field="umsatz_gebucht" data-row="0">—</span>
+      <span class="cc-kpi-note">Coaching-Buchungen: <b data-draw="kz" data-source="kennzahlen" data-field="coaching_buchungen" data-row="0">—</b></span>
+    </div>
+  </section>
+
+  <nav class="cc-tabs" role="tablist" aria-label="Ansichten">
+    <button type="button" class="cc-tab is-active" role="tab" id="tab-uebersicht" data-tab="uebersicht" aria-selected="true" aria-controls="uebersicht">Übersicht</button>
+    <button type="button" class="cc-tab" role="tab" id="tab-aufgaben" data-tab="aufgaben" aria-selected="false" aria-controls="aufgaben" tabindex="-1">Aufgaben</button>
+    <button type="button" class="cc-tab" role="tab" id="tab-projekte" data-tab="projekte" aria-selected="false" aria-controls="projekte" tabindex="-1">Projekte</button>
+    <button type="button" class="cc-tab" role="tab" id="tab-content" data-tab="content" aria-selected="false" aria-controls="content" tabindex="-1">Content</button>
+    <button type="button" class="cc-tab" role="tab" id="tab-kennzahlen" data-tab="kennzahlen" aria-selected="false" aria-controls="kennzahlen" tabindex="-1">Kennzahlen</button>
+    <button type="button" class="cc-tab" role="tab" id="tab-routinen" data-tab="routinen" aria-selected="false" aria-controls="routinen" tabindex="-1">Routinen</button>
+  </nav>
+
+  <!-- Übersicht -->
+  <section class="cc-panel" id="uebersicht" role="tabpanel" aria-labelledby="tab-uebersicht">
+    <div class="cc-two">
+      <div class="cc-block" id="fokus">
+        <div class="cc-block-head">
+          <h2 class="cc-h2">Fokus</h2>
+          <p class="cc-sub">Offene MUSS-Aufgaben und alles, was bis morgen fällig ist</p>
+        </div>
+        <ul class="cc-list dash-skeleton" data-draw="fokus" data-source="aufgaben"></ul>
+      </div>
+      <div class="cc-block" id="projekte-kurz">
+        <div class="cc-block-head">
+          <h2 class="cc-h2">Projekte im Blick</h2>
+          <p class="cc-sub">Erledigte von allen verknüpften Aufgaben</p>
+        </div>
+        <div class="dash-skeleton" data-draw="projekt-kompakt" data-source="projekte projektstand" style="min-height: 8rem"></div>
+      </div>
+    </div>
+
+    <div class="cc-block" id="zeitleiste">
+      <div class="cc-block-head">
+        <h2 class="cc-h2">Termine der letzten 7 und nächsten 14 Tage</h2>
+        <div class="cc-legend" aria-hidden="true">
+          <span><i class="circle tone-muss" style="background: var(--cc-muss)"></i>Aufgabe MUSS</span>
+          <span><i class="circle" style="background: var(--cc-soll)"></i>SOLL</span>
+          <span><i class="circle" style="background: var(--cc-kann)"></i>KANN</span>
+          <span><i class="diamond" data-draw="legend-content"></i>Content</span>
+          <span><i data-draw="legend-projekt"></i>Projekt-Deadline</span>
+          <span><i class="line"></i>heute</span>
+        </div>
+      </div>
+      <div class="cc-chart dash-skeleton" data-draw="zeitleiste" data-source="aufgaben content projekte"></div>
+      <p class="cc-sub">Ältere offene Termine stehen am linken Rand. Später geplant: <span data-draw="spaeter">—</span></p>
+    </div>
+  </section>
+
+  <!-- Aufgaben -->
+  <section class="cc-panel" id="aufgaben" role="tabpanel" aria-labelledby="tab-aufgaben" hidden>
+    <div class="cc-filters" role="search">
+      <input class="cc-search" id="f-suche" type="search" placeholder="Aufgabe, Projekt oder nächster Schritt" aria-label="Aufgaben durchsuchen">
+      <select class="dash-select" id="f-entitaet" aria-label="Entität">
+        <option value="">Alle Entitäten</option>
+        <option value="MMT UG">MMT UG</option>
+        <option value="Persönliche Marke">Persönliche Marke</option>
+        <option value="Side-Projects">Side-Projects</option>
+      </select>
+      <select class="dash-select" id="f-prio" aria-label="Priorität">
+        <option value="">Alle Prioritäten</option>
+        <option value="MUSS">MUSS</option>
+        <option value="SOLL">SOLL</option>
+        <option value="KANN">KANN</option>
+      </select>
+      <button type="button" class="cc-btn" id="f-reset">Filter zurücksetzen</button>
+    </div>
+    <div class="cc-board" id="board">
+      <section class="cc-col" id="spalte-offen">
+        <div class="cc-col-head"><h3>Offen</h3><span class="cc-count" data-draw="spaltenzahl" data-source="aufgabenstatus" data-field="n" data-where="status=Offen">—</span></div>
+        <ul class="cc-list dash-skeleton" data-draw="spalte" data-status="Offen" data-source="aufgaben"></ul>
+      </section>
+      <section class="cc-col" id="spalte-in-arbeit">
+        <div class="cc-col-head"><h3>In Arbeit</h3><span class="cc-count" data-draw="spaltenzahl" data-source="aufgabenstatus" data-field="n" data-where="status=In Arbeit">—</span></div>
+        <ul class="cc-list dash-skeleton" data-draw="spalte" data-status="In Arbeit" data-source="aufgaben"></ul>
+      </section>
+      <section class="cc-col" id="spalte-blockiert">
+        <div class="cc-col-head"><h3>Blockiert</h3><span class="cc-count" data-draw="spaltenzahl" data-source="aufgabenstatus" data-field="n" data-where="status=Blockiert">—</span></div>
+        <ul class="cc-list dash-skeleton" data-draw="spalte" data-status="Blockiert" data-source="aufgaben"></ul>
+      </section>
+      <section class="cc-col" id="spalte-erledigt">
+        <div class="cc-col-head"><h3>Erledigt</h3><span class="cc-count" data-draw="spaltenzahl" data-source="aufgabenstatus" data-field="n" data-where="status=Erledigt">—</span></div>
+        <ul class="cc-list dash-skeleton" data-draw="spalte" data-status="Erledigt" data-source="aufgaben"></ul>
+      </section>
+    </div>
+    <details class="cc-details" id="geparkt">
+      <summary>Geparkte Aufgaben (<span data-draw="spaltenzahl" data-source="aufgabenstatus" data-field="n" data-where="status=Geparkt">—</span>)</summary>
+      <ul class="cc-list" data-draw="spalte" data-status="Geparkt" data-source="aufgaben"></ul>
+    </details>
+  </section>
+
+  <!-- Projekte -->
+  <section class="cc-panel" id="projekte" role="tabpanel" aria-labelledby="tab-projekte" hidden>
+    <p class="cc-sub">Aktive, geplante und blockierte Projekte nach Bereich. Der Balken zählt die verknüpften Aufgaben ohne geparkte.</p>
+    <div class="cc-block dash-skeleton" data-draw="projekte" data-source="projekte projektstand" style="min-height: 10rem"></div>
+    <details class="cc-details" id="projekte-zu">
+      <summary>Abgeschlossene und geparkte Projekte</summary>
+      <ul class="cc-list" data-draw="projekte-zu" data-source="projekte"></ul>
+    </details>
+  </section>
+
+  <!-- Content -->
+  <section class="cc-panel" id="content" role="tabpanel" aria-labelledby="tab-content" hidden>
+    <div class="cc-block" id="pipeline">
+      <h2 class="cc-h2">Pipeline</h2>
+      <div class="cc-pipe">
+        <div><span class="cc-pipe-n" data-draw="cstat" data-source="contentstatus" data-field="n" data-where="status=Idee">—</span><span class="cc-pipe-l">Idee</span></div>
+        <div><span class="cc-pipe-n" data-draw="cstat" data-source="contentstatus" data-field="n" data-where="status=In Produktion">—</span><span class="cc-pipe-l">In Produktion</span></div>
+        <div><span class="cc-pipe-n" data-draw="cstat" data-source="contentstatus" data-field="n" data-where="status=Geplant">—</span><span class="cc-pipe-l">Geplant</span></div>
+        <div><span class="cc-pipe-n" data-draw="cstat" data-source="contentstatus" data-field="n" data-where="status=Veröffentlicht">—</span><span class="cc-pipe-l">Veröffentlicht</span></div>
+        <div><span class="cc-pipe-n" data-draw="cstat" data-source="contentstatus" data-field="n" data-where="status=Geparkt">—</span><span class="cc-pipe-l">Geparkt</span></div>
+      </div>
+    </div>
+    <div class="cc-block" id="redaktionsplan">
+      <div class="cc-block-head">
+        <h2 class="cc-h2">Redaktionsplan</h2>
+        <p class="cc-sub">Geplant und in Produktion, nach Veröffentlichungsdatum</p>
+      </div>
+      <div class="cc-tablewrap">
+        <table class="cc-table" data-source="content" data-row-key="id">
+          <thead>
+            <tr>
+              <th data-field="datum">Datum</th>
+              <th data-field="name">Titel</th>
+              <th data-field="status">Status</th>
+              <th data-field="format">Format</th>
+              <th data-field="kanal">Kanal</th>
+              <th data-field="ziel">Ziel</th>
+              <th data-field="prio">Priorität</th>
+            </tr>
+          </thead>
+          <tbody data-draw="redaktionsplan"></tbody>
+        </table>
+      </div>
+    </div>
+    <details class="cc-details" id="ideen">
+      <summary>Ideenspeicher (<span data-draw="cstat" data-source="contentstatus" data-field="n" data-where="status=Idee">—</span>)</summary>
+      <ul class="cc-list" data-draw="ideen" data-source="content"></ul>
+    </details>
+  </section>
+
+  <!-- Kennzahlen -->
+  <section class="cc-panel" id="kennzahlen" role="tabpanel" aria-labelledby="tab-kennzahlen" hidden>
+    <p class="cc-sub">Wochenwerte aus der Notion-Datenbank „Kennzahlen“. „k. A.“ heißt: nicht erhoben, nicht null.</p>
+    <div class="cc-tablewrap">
+      <table class="cc-table" data-source="kennzahlen" data-row-key="stichtag">
+        <thead>
+          <tr>
+            <th data-field="zeitraum">Zeitraum</th>
+            <th data-field="datenstatus">Datenstatus</th>
+            <th class="num" data-field="umsatz_gebucht">Umsatz gebucht</th>
+            <th class="num" data-field="umsatz_realisiert">Umsatz realisiert</th>
+            <th class="num" data-field="coaching_anfragen">Coaching-Anfragen</th>
+            <th class="num" data-field="coaching_buchungen">Coaching-Buchungen</th>
+            <th class="num" data-field="gespraeche">Verkaufsgespräche</th>
+            <th class="num" data-field="leads">Neue Leads</th>
+            <th class="num" data-field="content_assets">Content-Assets</th>
+            <th class="num" data-field="posts">Posts</th>
+            <th class="num" data-field="video_views">Video-Views</th>
+            <th class="num" data-field="webinar_reg">Webinar-Registrierungen</th>
+            <th class="num" data-field="community_neu">Neue Community-Mitglieder</th>
+            <th class="num" data-field="newsletter">Newsletter-Anmeldungen</th>
+          </tr>
+        </thead>
+        <tbody data-draw="kz-tabelle"></tbody>
+      </table>
+    </div>
+    <details class="cc-details" id="kz-notiz-block">
+      <summary>Notiz zur jüngsten Woche</summary>
+      <div class="cc-notiz" data-draw="kz-notiz" data-source="kennzahlen" data-field="notiz" data-row="0">—</div>
+      <p class="cc-foot">Quelle: <span data-draw="kz-text" data-source="kennzahlen" data-field="quelle" data-row="0">—</span></p>
+    </details>
+  </section>
+
+  <!-- Routinen -->
+  <section class="cc-panel" id="routinen" role="tabpanel" aria-labelledby="tab-routinen" hidden>
+    <ul class="cc-grid cc-list dash-skeleton" data-draw="routinen" data-source="routinen"></ul>
+  </section>
+
+  <p class="cc-foot">Daten live aus Notion (Control Centre). Titel öffnen die Seite in Notion; Änderungen dort erscheinen hier beim nächsten Laden.</p>
+</div>
+
+<script>
+  /* Gemeinsame Helfer für alle Zeichnungen */
+  window.cc = (() => {
+    const OPEN = ['Offen', 'In Arbeit', 'Blockiert'];
+    const PRIO_RANK = { MUSS: 0, SOLL: 1, KANN: 2 };
+    const BEREICHE = ['00 Steuerung', '10 MMT UG', '20 Persönliche Marke', '30 Content Gem / SaaS', '40 Social Media', '90 Side-Projects'];
+    const STATUS_TONE = {
+      'Offen': 'tone-muted', 'In Arbeit': 'tone-run', 'Blockiert': 'tone-bad', 'Erledigt': 'tone-ok', 'Geparkt': 'tone-muted',
+      'Aktiv': 'tone-ok', 'Geplant': 'tone-muted', 'Abgeschlossen': 'tone-ok',
+      'Läuft': 'tone-ok', 'Pausiert': 'tone-muted',
+      'Idee': 'tone-muted', 'In Produktion': 'tone-warn', 'Veröffentlicht': 'tone-ok'
+    };
+
+    const pad = (n) => String(n).padStart(2, '0');
+    const today = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
+    const day = (s) => String(s || '').slice(0, 10);
+    const addDays = (iso, n) => { const t = new Date(Date.parse(iso) + n * 864e5); return t.toISOString().slice(0, 10); };
+    const diff = (a, b) => Math.round((Date.parse(day(a)) - Date.parse(day(b))) / 864e5);
+    const fmt = (s, withYear) => { const [y, m, d] = day(s).split('-'); if (!d) return ''; return withYear ? `${d}.${m}.${y}` : `${d}.${m}.`; };
+    const numFmt = new Intl.NumberFormat('de-DE');
+    const eurFmt = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
+    const num = (v) => numFmt.format(Number(v));
+    const eur = (v) => eurFmt.format(Number(v));
+    const list = (v) => { if (Array.isArray(v)) return v; try { const a = JSON.parse(v || '[]'); return Array.isArray(a) ? a : []; } catch { return []; } };
+    const isOpen = (r) => OPEN.includes(r.status);
+    const prioRank = (p) => (p in PRIO_RANK ? PRIO_RANK[p] : 3);
+    const byDeadlineThenPrio = (a, b) => {
+      const da = a.deadline ? day(a.deadline) : '9999', db = b.deadline ? day(b.deadline) : '9999';
+      return da.localeCompare(db) || prioRank(a.prio) - prioRank(b.prio) || String(a.name).localeCompare(String(b.name), 'de');
+    };
+    const byPrioThenDeadline = (a, b) => prioRank(a.prio) - prioRank(b.prio) || byDeadlineThenPrio(a, b);
+
+    function h(tag, cls, text) {
+      const el = document.createElement(tag);
+      if (cls) el.className = cls;
+      if (text != null && text !== '') el.textContent = String(text);
+      return el;
+    }
+    function mark(el, source, field, where) {
+      el.setAttribute('data-source', source);
+      el.setAttribute('data-field', field);
+      if (where != null) el.setAttribute('data-where', where);
+      return el;
+    }
+    function link(url, text, cls) {
+      const ok = typeof url === 'string' && url.startsWith('https://');
+      const el = h(ok ? 'a' : 'span', cls, text);
+      if (ok) { el.href = url; el.target = '_blank'; el.rel = 'noopener'; }
+      return el;
+    }
+    function pill(text, tone, noDot) {
+      const el = h('span', 'cc-pill ' + (tone || 'tone-muted') + (noDot ? ' no-dot' : ''), text);
+      return el;
+    }
+    const prioTone = (p) => ({ MUSS: 'tone-muss', SOLL: 'tone-soll', KANN: 'tone-kann' }[p] || 'tone-muted');
+    const statusTone = (s) => STATUS_TONE[s] || 'tone-muted';
+    const bereichColor = (b) => {
+      const i = BEREICHE.indexOf(b);
+      const colors = (window.dash && dash.colors) || [];
+      return colors.length ? colors[(i < 0 ? BEREICHE.length : i) % colors.length] : 'var(--color-fg-muted)';
+    };
+
+    function dueInfo(deadline, open) {
+      if (!deadline) return null;
+      if (!open) return { text: fmt(deadline), cls: '' };
+      const d = diff(deadline, today());
+      if (d < 0) return { text: `überfällig seit ${-d} ${-d === 1 ? 'Tag' : 'Tagen'}`, cls: 'is-bad' };
+      if (d === 0) return { text: 'heute fällig', cls: 'is-warn' };
+      if (d === 1) return { text: 'morgen fällig', cls: 'is-warn' };
+      return { text: `fällig ${fmt(deadline)}`, cls: '' };
+    }
+
+    /* Status mehrerer Quellen; entfernt den Platzhalter, sobald nichts mehr lädt. */
+    function state(el, ids) {
+      const st = ids.map((id) => dash.data(id).status);
+      const loading = st.includes('loading');
+      if (!loading) el.classList.remove('dash-skeleton');
+      return { ok: st.every((s) => s === 'ok'), loading, error: st.includes('error') || st.includes('missing') };
+    }
+    function fallback(el, s, what) {
+      const msg = s.error ? `${what || 'Diese Daten'} konnten nicht aus Notion geladen werden.` : '';
+      const tag = el.tagName;
+      if (tag === 'UL' || tag === 'OL') {
+        el.replaceChildren(...(msg ? [h('li', 'cc-empty', msg)] : []));
+      } else if (tag === 'TBODY') {
+        if (!msg) { el.replaceChildren(); return; }
+        const tr = h('tr'); const td = h('td', 'cc-empty', msg);
+        td.colSpan = el.closest('table')?.querySelectorAll('thead th').length || 1;
+        tr.append(td); el.replaceChildren(tr);
+      } else if (el.matches('span, b')) {
+        el.textContent = '—';
+      } else {
+        el.replaceChildren(...(msg ? [h('p', 'cc-empty', msg)] : []));
+      }
+    }
+    function emptyItem(text) { return h('li', 'cc-empty', text); }
+
+    function matchesFilter(a) {
+      const p = dash.params() || {};
+      const q = String(p.q || '').toLowerCase().trim();
+      return (!p.entitaet || a.entitaet === p.entitaet)
+        && (!p.prio || a.prio === p.prio)
+        && (!q || `${a.name} ${a.projekt || ''} ${a.naechster_schritt || ''}`.toLowerCase().includes(q));
+    }
+
+    function taskCard(r, opt = {}) {
+      const li = h('li', 'cc-task');
+      li.id = 'aufgabe-' + r.id;
+      const title = mark(link(r.url, r.name, 'cc-task-title'), 'aufgaben', 'name', 'id=' + r.id);
+      const meta = h('div', 'cc-meta');
+      if (r.prio) meta.append(mark(pill(r.prio, prioTone(r.prio)), 'aufgaben', 'prio', 'id=' + r.id));
+      if (opt.status) meta.append(mark(pill(r.status, statusTone(r.status)), 'aufgaben', 'status', 'id=' + r.id));
+      const due = dueInfo(r.deadline, isOpen(r));
+      if (due) meta.append(mark(h('span', 'cc-due ' + due.cls, due.text), 'aufgaben', 'deadline', 'id=' + r.id));
+      if (r.projekt) meta.append(mark(h('span', 'cc-chip', r.projekt), 'aufgaben', 'projekt', 'id=' + r.id));
+      li.append(title, meta);
+      if (r.naechster_schritt && opt.next !== false) {
+        li.append(mark(h('p', 'cc-next', r.naechster_schritt), 'aufgaben', 'naechster_schritt', 'id=' + r.id));
+      }
+      return li;
+    }
+
+    function progress(stand, color) {
+      const wrap = h('div', 'cc-progress');
+      const bar = h('div', 'cc-bar');
+      const fill = h('span');
+      const g = stand ? stand.gesamt : 0, e = stand ? stand.erledigt : 0;
+      fill.style.width = g ? `${Math.round((e / g) * 100)}%` : '0%';
+      fill.style.background = color;
+      bar.append(fill);
+      bar.setAttribute('role', 'img');
+      bar.setAttribute('aria-label', g ? `${e} von ${g} Aufgaben erledigt` : 'keine verknüpften Aufgaben');
+      const txt = h('span', 'cc-progress-text');
+      if (stand && g) {
+        txt.append(
+          mark(h('span', '', num(e)), 'projektstand', 'erledigt', 'id=' + stand.id), ' von ',
+          mark(h('span', '', num(g)), 'projektstand', 'gesamt', 'id=' + stand.id)
+        );
+      } else {
+        txt.textContent = 'keine Aufgaben';
+      }
+      wrap.append(bar, txt);
+      return wrap;
+    }
+
+    function stillInfo(fortschritt) {
+      if (!fortschritt) return { text: 'kein Fortschritt eingetragen', warn: true };
+      const d = -diff(fortschritt, today());
+      const when = d === 0 ? 'heute' : d === 1 ? 'gestern' : `vor ${d} Tagen`;
+      return { text: `letzter Fortschritt ${fmt(fortschritt)} (${when})`, warn: d > 7 };
+    }
+
+    return { OPEN, BEREICHE, today, day, addDays, diff, fmt, num, eur, list, isOpen, prioRank, byDeadlineThenPrio, byPrioThenDeadline,
+      h, mark, link, pill, prioTone, statusTone, bereichColor, dueInfo, state, fallback, emptyItem, matchesFilter, taskCard, progress, stillInfo };
+  })();
+</script>
+
+<script>
+  /* Berechnungen aus den Notion-Quellen */
+  dash.calc('kpis', {
+    title: 'Kennzahlen der Aufgaben und Projekte',
+    description: 'Zählt offene Aufgaben (Offen, In Arbeit, Blockiert) nach Priorität und Deadline sowie aktive Projekte, bezogen auf das heutige Datum.',
+    inputs: ['aufgaben', 'projekte'],
+    fn: (aufgaben, projekte) => {
+      const d = new Date();
+      const heute = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      const tage = (iso) => Math.round((Date.parse(String(iso).slice(0, 10)) - Date.parse(heute)) / 864e5);
+      const offen = aufgaben.filter((a) => ['Offen', 'In Arbeit', 'Blockiert'].includes(a.status));
+      const mitDeadline = offen.filter((a) => a.deadline);
+      const aktiv = projekte.filter((p) => p.status === 'Aktiv' || p.status === 'Blockiert');
+      return [{
+        offen: offen.length,
+        muss_offen: offen.filter((a) => a.prio === 'MUSS').length,
+        ueberfaellig: mitDeadline.filter((a) => tage(a.deadline) < 0).length,
+        heute_faellig: mitDeadline.filter((a) => tage(a.deadline) === 0).length,
+        faellig_7: mitDeadline.filter((a) => tage(a.deadline) >= 0 && tage(a.deadline) <= 7).length,
+        blockiert: offen.filter((a) => a.status === 'Blockiert').length,
+        projekte_aktiv: aktiv.length,
+        projekte_still: aktiv.filter((p) => !p.fortschritt || tage(p.fortschritt) < -7).length
+      }];
+    }
+  });
+
+  dash.calc('projektstand', {
+    title: 'Aufgabenstand je Projekt',
+    description: 'Zählt je Projekt die über „Projekt-Verknüpfung“ zugeordneten Aufgaben: gesamt (ohne geparkte), erledigt und offen.',
+    inputs: ['projekte', 'aufgaben'],
+    fn: (projekte, aufgaben) => {
+      const offen = ['Offen', 'In Arbeit', 'Blockiert'];
+      const links = (v) => { try { const a = JSON.parse(v || '[]'); return Array.isArray(a) ? a : []; } catch { return []; } };
+      return projekte.map((p) => {
+        const ts = aufgaben.filter((a) => links(a.projekt_urls).includes(p.url));
+        const zaehlbar = ts.filter((a) => a.status !== 'Geparkt');
+        return {
+          id: p.id,
+          gesamt: zaehlbar.length,
+          erledigt: zaehlbar.filter((a) => a.status === 'Erledigt').length,
+          offen: ts.filter((a) => offen.includes(a.status)).length,
+          muss_offen: ts.filter((a) => offen.includes(a.status) && a.prio === 'MUSS').length
+        };
+      });
+    }
+  });
+
+  dash.calc('aufgabenstatus', {
+    title: 'Aufgaben je Status (gefiltert)',
+    description: 'Anzahl der Aufgaben je Status, mit den Filtern der Aufgaben-Ansicht (Suche, Entität, Priorität).',
+    inputs: ['aufgaben'],
+    fn: (aufgaben) => {
+      const p = dash.params() || {};
+      const q = String(p.q || '').toLowerCase().trim();
+      const rows = aufgaben.filter((a) => (!p.entitaet || a.entitaet === p.entitaet)
+        && (!p.prio || a.prio === p.prio)
+        && (!q || `${a.name} ${a.projekt || ''} ${a.naechster_schritt || ''}`.toLowerCase().includes(q)));
+      return ['Offen', 'In Arbeit', 'Blockiert', 'Erledigt', 'Geparkt'].map((status) => ({ status, n: rows.filter((a) => a.status === status).length }));
+    }
+  });
+
+  dash.calc('contentstatus', {
+    title: 'Content je Status',
+    description: 'Anzahl der Content-Einträge je Status.',
+    inputs: ['content'],
+    fn: (content) => ['Idee', 'In Produktion', 'Geplant', 'Veröffentlicht', 'Geparkt'].map((status) => ({ status, n: content.filter((c) => c.status === status).length }))
+  });
+</script>
+
+<script>
+  /* Kopf und Kennzahlen-Leiste */
+  dash.draw('heute', (el) => {
+    el.textContent = new Intl.DateTimeFormat('de-DE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date());
+  });
+
+  dash.draw('kpi', (el) => {
+    const s = cc.state(el, ['kpis']);
+    const tile = el.classList.contains('cc-kpi-value') ? el.closest('.cc-kpi') : null;
+    if (!s.ok) { el.textContent = '—'; return; }
+    const row = dash.data('kpis').data[0] || {};
+    const v = row[el.dataset.field];
+    el.textContent = v == null ? '—' : cc.num(v);
+    if (tile && tile.dataset.alert) tile.classList.toggle('is-' + tile.dataset.alert, Number(v) > 0);
+  });
+
+  dash.draw('lage', (el) => {
+    const k = dash.data('kpis');
+    const over = k.status === 'ok' && k.data[0] ? k.data[0].ueberfaellig : null;
+    const parent = el.parentElement;
+    if (!parent) return;
+    parent.querySelectorAll('[data-case]').forEach((x) => {
+      x.hidden = over == null ? true : (x.dataset.case === 'over' ? !(over > 0) : over > 0);
+    });
+  });
+
+  dash.draw('kz', (el) => {
+    const s = cc.state(el, ['kennzahlen']);
+    if (!s.ok) { el.textContent = '—'; return; }
+    const r = dash.data('kennzahlen').data[0];
+    const f = el.dataset.field;
+    const v = r ? r[f] : null;
+    if (f === 'zeitraum') {
+      const m = String(v || '').match(/^KW\s?\d+/);
+      el.textContent = m ? m[0] : (v || '—');
+      return;
+    }
+    const unknown = v == null || v === '';
+    el.textContent = unknown ? 'k. A.' : (el.dataset.format === 'eur' ? cc.eur(v) : cc.num(v));
+    el.classList.toggle('is-unknown', unknown);
+  });
+</script>
+
+<script>
+  /* Übersicht */
+  dash.draw('fokus', (el) => {
+    const s = cc.state(el, ['aufgaben']);
+    if (!s.ok) return cc.fallback(el, s, 'Die Aufgaben');
+    const morgen = cc.addDays(cc.today(), 1);
+    const rows = dash.data('aufgaben').data
+      .filter((a) => cc.isOpen(a) && (a.prio === 'MUSS' || (a.deadline && cc.day(a.deadline) <= morgen)))
+      .sort(cc.byDeadlineThenPrio);
+    el.replaceChildren(...rows.map((r) => cc.taskCard(r, { status: r.status !== 'Offen' })));
+    if (!rows.length) el.replaceChildren(cc.emptyItem('Bis morgen ist nichts fällig und keine MUSS-Aufgabe offen.'));
+  });
+
+  dash.draw('projekt-kompakt', (el) => {
+    const s = cc.state(el, ['projekte', 'projektstand']);
+    if (!s.ok) return cc.fallback(el, s, 'Die Projekte');
+    const stand = new Map(dash.data('projektstand').data.map((r) => [r.id, r]));
+    const rows = dash.data('projekte').data
+      .filter((p) => ['Aktiv', 'Blockiert', 'Geplant'].includes(p.status))
+      .sort((a, b) => cc.prioRank(a.prio) - cc.prioRank(b.prio) || String(a.bereich).localeCompare(String(b.bereich)));
+    const items = rows.map((p) => {
+      const row = cc.h('div', 'cc-prow');
+      row.id = 'projekt-kurz-' + p.id;
+      const name = cc.h('div', 'cc-prow-name');
+      name.append(cc.mark(cc.link(p.url, p.name), 'projekte', 'name', 'id=' + p.id));
+      const meta = cc.h('div', 'cc-meta');
+      if (p.prio) meta.append(cc.mark(cc.pill(p.prio, cc.prioTone(p.prio)), 'projekte', 'prio', 'id=' + p.id));
+      if (p.status !== 'Aktiv') meta.append(cc.mark(cc.pill(p.status, cc.statusTone(p.status)), 'projekte', 'status', 'id=' + p.id));
+      const still = cc.stillInfo(p.fortschritt);
+      if (p.status !== 'Geplant' && still.warn) meta.append(cc.mark(cc.h('span', 'cc-due is-warn', still.text), 'projekte', 'fortschritt', 'id=' + p.id));
+      name.append(meta);
+      const st = stand.get(p.id);
+      const prog = cc.progress(st, cc.bereichColor(p.bereich));
+      const bar = prog.firstChild;
+      const txt = prog.lastChild;
+      const offen = cc.h('span', 'cc-progress-text');
+      if (st) offen.append(cc.mark(cc.h('span', '', cc.num(st.offen)), 'projektstand', 'offen', 'id=' + st.id), ' offen');
+      const right = cc.h('div', 'cc-prow-name');
+      right.style.justifyItems = 'end';
+      right.append(txt, offen);
+      row.append(name, bar, right);
+      return row;
+    });
+    el.replaceChildren(...items);
+    if (!items.length) el.replaceChildren(cc.h('p', 'cc-empty', 'Keine aktiven Projekte.'));
+  });
+
+  dash.draw('legend-content', (el) => { el.style.background = dash.colors[0]; });
+  dash.draw('legend-projekt', (el) => { el.style.background = dash.colors[1] || dash.colors[0]; });
+
+  dash.draw('zeitleiste', (el) => {
+    const s = cc.state(el, ['aufgaben', 'content', 'projekte']);
+    if (!s.ok) return cc.fallback(el, s, 'Die Termine');
+    const today = cc.today();
+    const start = cc.addDays(today, -7);
+    const end = cc.addDays(today, 14);
+    const items = [];
+    dash.data('aufgaben').data.filter((a) => cc.isOpen(a) && a.deadline).forEach((a) => items.push({
+      kind: 'Aufgabe', order: 0 + cc.prioRank(a.prio) / 10, date: cc.day(a.deadline), name: a.name,
+      sub: [a.prio, a.status, a.projekt].filter(Boolean).join(' · '),
+      fill: { MUSS: 'var(--cc-muss)', SOLL: 'var(--cc-soll)', KANN: 'var(--cc-kann)' }[a.prio] || 'var(--cc-kann)', shape: d3.symbolCircle
+    }));
+    dash.data('content').data.filter((c) => c.datum && c.status !== 'Geparkt').forEach((c) => items.push({
+      kind: 'Content', order: 1, date: cc.day(c.datum), name: c.name,
+      sub: [c.status, c.format, cc.list(c.kanal).join(', ')].filter(Boolean).join(' · '),
+      fill: dash.colors[0], shape: d3.symbolDiamond
+    }));
+    dash.data('projekte').data.filter((p) => p.deadline && ['Aktiv', 'Geplant', 'Blockiert'].includes(p.status)).forEach((p) => items.push({
+      kind: 'Projekt-Deadline', order: 2, date: cc.day(p.deadline), name: p.name,
+      sub: [p.status, p.bereich].filter(Boolean).join(' · '),
+      fill: dash.colors[1] || dash.colors[0], shape: d3.symbolSquare
+    }));
+
+    const shown = items.filter((i) => i.date <= end).map((i) => ({ ...i, slot: i.date < start ? start : i.date, old: i.date < start }));
+    shown.sort((a, b) => a.slot.localeCompare(b.slot) || a.order - b.order || a.date.localeCompare(b.date));
+    const stackOf = new Map();
+    shown.forEach((i) => { const n = stackOf.get(i.slot) || 0; i.stack = n; stackOf.set(i.slot, n + 1); });
+    const maxStack = Math.max(1, ...stackOf.values());
+
+    const w = Math.max(280, el.clientWidth || 600);
+    const step = 15;
+    const m = { t: 12, r: 8, b: 26, l: 8 };
+    const plotH = maxStack * step + 8;
+    const hgt = m.t + plotH + m.b;
+    const x = d3.scaleUtc().domain([Date.parse(start), Date.parse(end) + 864e5]).range([m.l, w - m.r]);
+    const dayW = x(Date.parse(start) + 864e5) - x(Date.parse(start));
+    const cx = (iso) => x(Date.parse(iso) + 432e5);
+
+    const svg = d3.create('svg').attr('viewBox', `0 0 ${w} ${hgt}`).attr('width', w).attr('height', hgt)
+      .attr('role', 'img')
+      .attr('aria-label', `Zeitleiste vom ${cc.fmt(start)} bis ${cc.fmt(end)}: ${shown.length} Termine, davon ${shown.filter((i) => i.old).length} älter.`);
+
+    const days = d3.utcDay.range(new Date(Date.parse(start)), new Date(Date.parse(end) + 864e5));
+    svg.append('g').selectAll('rect').data(days.filter((d) => d.getUTCDay() === 0 || d.getUTCDay() === 6)).join('rect')
+      .attr('x', (d) => x(d)).attr('y', m.t).attr('width', dayW).attr('height', plotH)
+      .style('fill', 'var(--cds-chart-grid)').style('opacity', 0.5);
+    svg.append('line').attr('x1', cx(today)).attr('x2', cx(today)).attr('y1', m.t - 4).attr('y2', m.t + plotH)
+      .style('stroke', 'var(--cds-chart-reference)').style('stroke-width', 2);
+
+    const every = w < 420 ? 7 : w < 640 ? 3 : 2;
+    svg.append('g').attr('transform', `translate(0,${m.t + plotH})`)
+      .call(d3.axisBottom(x).ticks(d3.utcDay.every(every)).tickFormat(d3.utcFormat('%d.%m.')).tickSizeOuter(0));
+
+    const sym = d3.symbol().size(Math.min(80, Math.max(40, dayW * 4)));
+    const marks = svg.append('g').selectAll('path').data(shown).join('path')
+      .attr('d', (d) => sym.type(d.shape)())
+      .attr('transform', (d) => `translate(${cx(d.slot)},${m.t + plotH - 4 - step / 2 - d.stack * step})`)
+      .style('fill', (d) => d.fill)
+      .style('fill-opacity', (d) => (d.old ? 0.45 : 1))
+      .style('stroke', 'var(--color-bg)').style('stroke-width', 1)
+      .style('cursor', 'pointer');
+
+    const tip = document.createElement('div');
+    tip.className = 'cc-tip';
+    tip.hidden = true;
+    const showTip = (event, d) => {
+      const t = document.createElement('strong'); t.textContent = d.name;
+      const sub = document.createElement('span');
+      sub.textContent = `${d.kind} · ${cc.fmt(d.date, true)}${d.old ? ' (älter)' : ''}${d.sub ? ' · ' + d.sub : ''}`;
+      tip.replaceChildren(t, sub);
+      tip.hidden = false;
+      const box = el.getBoundingClientRect();
+      const px = event.clientX - box.left, py = event.clientY - box.top;
+      const tw = tip.offsetWidth;
+      tip.style.left = `${Math.max(0, Math.min(box.width - tw, px - tw / 2))}px`;
+      tip.style.top = `${Math.max(0, py - tip.offsetHeight - 12)}px`;
+    };
+    marks.on('pointerenter pointermove click', showTip).on('pointerleave', () => { tip.hidden = true; });
+    el.replaceChildren(svg.node(), tip);
+    if (!shown.length) el.append(cc.h('p', 'cc-empty', 'In diesem Zeitraum stehen keine Termine an.'));
+  });
+
+  dash.draw('spaeter', (el) => {
+    const s = cc.state(el, ['aufgaben', 'content', 'projekte']);
+    if (!s.ok) { el.textContent = '—'; return; }
+    const end = cc.addDays(cc.today(), 14);
+    const later = [];
+    dash.data('aufgaben').data.filter((a) => cc.isOpen(a) && a.deadline && cc.day(a.deadline) > end).forEach((a) => later.push([cc.day(a.deadline), a.name]));
+    dash.data('content').data.filter((c) => c.datum && c.status !== 'Geparkt' && cc.day(c.datum) > end).forEach((c) => later.push([cc.day(c.datum), c.name]));
+    dash.data('projekte').data.filter((p) => p.deadline && ['Aktiv', 'Geplant', 'Blockiert'].includes(p.status) && cc.day(p.deadline) > end).forEach((p) => later.push([cc.day(p.deadline), p.name]));
+    later.sort((a, b) => a[0].localeCompare(b[0]));
+    el.textContent = later.length ? later.map(([dt, n]) => `${n} (${cc.fmt(dt, true)})`).join('; ') : 'nichts';
+  });
+</script>
+
+<script>
+  /* Aufgaben: Board mit Filtern */
+  dash.draw('spalte', (el) => {
+    const status = el.dataset.status;
+    const s = cc.state(el, ['aufgaben']);
+    if (!s.ok) return cc.fallback(el, s, 'Die Aufgaben');
+    const rows = dash.data('aufgaben').data.filter((a) => a.status === status && cc.matchesFilter(a));
+    if (status === 'Erledigt') rows.sort((a, b) => String(b.fortschritt || '').localeCompare(String(a.fortschritt || '')));
+    else rows.sort(cc.byPrioThenDeadline);
+    el.replaceChildren(...rows.map((r) => cc.taskCard(r, { next: status !== 'Erledigt' })));
+    if (!rows.length) el.replaceChildren(cc.emptyItem('Keine Aufgaben.'));
+  });
+
+  dash.draw('spaltenzahl', (el) => {
+    const s = cc.state(el, ['aufgabenstatus']);
+    if (!s.ok) { el.textContent = '—'; return; }
+    const want = decodeURIComponent((el.dataset.where || '').split('=')[1] || '');
+    const row = dash.data('aufgabenstatus').data.find((r) => r.status === want);
+    el.textContent = row ? cc.num(row.n) : '—';
+  });
+
+  (() => {
+    const p = dash.params() || {};
+    let timer = 0;
+    document.querySelectorAll('#f-suche').forEach((inp) => {
+      inp.value = p.q || '';
+      inp.addEventListener('input', () => {
+        clearTimeout(timer);
+        timer = setTimeout(() => dash.setParams({ q: inp.value.trim() || null }), 250);
+      });
+    });
+    document.querySelectorAll('#f-entitaet').forEach((sel) => {
+      sel.value = p.entitaet || '';
+      sel.addEventListener('change', () => dash.setParams({ entitaet: sel.value || null }));
+    });
+    document.querySelectorAll('#f-prio').forEach((sel) => {
+      sel.value = p.prio || '';
+      sel.addEventListener('change', () => dash.setParams({ prio: sel.value || null }));
+    });
+    document.querySelectorAll('#f-reset').forEach((btn) => btn.addEventListener('click', () => {
+      dash.setParams({ q: null, entitaet: null, prio: null });
+      document.querySelectorAll('#f-suche, #f-entitaet, #f-prio').forEach((x) => { x.value = ''; });
+    }));
+  })();
+</script>
+
+<script>
+  /* Projekte nach Bereich */
+  dash.draw('projekte', (el) => {
+    const s = cc.state(el, ['projekte', 'projektstand']);
+    if (!s.ok) return cc.fallback(el, s, 'Die Projekte');
+    const stand = new Map(dash.data('projektstand').data.map((r) => [r.id, r]));
+    const rows = dash.data('projekte').data.filter((p) => ['Aktiv', 'Blockiert', 'Geplant'].includes(p.status));
+    const groups = d3.groups(rows, (p) => p.bereich || 'Ohne Bereich').sort((a, b) => String(a[0]).localeCompare(String(b[0])));
+    const out = groups.map(([bereich, ps]) => {
+      const sec = cc.h('section', 'cc-bereich');
+      sec.id = 'bereich-' + String(bereich).slice(0, 2);
+      const head = cc.h('div', 'cc-bereich-head');
+      const sw = cc.h('span', 'cc-swatch');
+      sw.style.background = cc.bereichColor(bereich);
+      head.append(sw, cc.h('h2', 'cc-h2', bereich));
+      const grid = cc.h('div', 'cc-grid');
+      ps.sort((a, b) => cc.prioRank(a.prio) - cc.prioRank(b.prio)).forEach((p) => {
+        const w = 'id=' + p.id;
+        const card = cc.h('article', 'cc-card');
+        card.id = 'projekt-' + p.id;
+        const meta = cc.h('div', 'cc-meta');
+        meta.append(cc.mark(cc.pill(p.status, cc.statusTone(p.status)), 'projekte', 'status', w));
+        if (p.prio) meta.append(cc.mark(cc.pill(p.prio, cc.prioTone(p.prio)), 'projekte', 'prio', w));
+        cc.list(p.ziel).forEach((z) => meta.append(cc.h('span', 'cc-chip', z)));
+        card.append(cc.mark(cc.link(p.url, p.name, 'cc-card-title'), 'projekte', 'name', w), meta);
+        card.append(cc.progress(stand.get(p.id), cc.bereichColor(p.bereich)));
+        if (p.meilenstein) {
+          card.append(cc.h('span', 'cc-label', 'Nächster Meilenstein'), cc.mark(cc.h('p', 'cc-next', p.meilenstein), 'projekte', 'meilenstein', w));
+        }
+        if (p.blocker) {
+          card.append(cc.h('span', 'cc-label', 'Blocker / Stand'), cc.mark(cc.h('p', 'cc-note', p.blocker), 'projekte', 'blocker', w));
+        }
+        const foot = cc.h('div', 'cc-card-foot');
+        const still = cc.stillInfo(p.fortschritt);
+        foot.append(cc.mark(cc.h('span', still.warn && p.status !== 'Geplant' ? 'is-warn' : '', still.text), 'projekte', 'fortschritt', w));
+        if (p.deadline) foot.append(cc.mark(cc.h('span', cc.diff(p.deadline, cc.today()) < 0 ? 'is-warn' : '', `Deadline ${cc.fmt(p.deadline, true)}`), 'projekte', 'deadline', w));
+        const st = stand.get(p.id);
+        if (st && st.muss_offen) foot.append(cc.h('span', 'is-warn', `${st.muss_offen} MUSS offen`));
+        card.append(foot);
+        grid.append(card);
+      });
+      sec.append(head, grid);
+      return sec;
+    });
+    el.replaceChildren(...out);
+    if (!out.length) el.replaceChildren(cc.h('p', 'cc-empty', 'Keine aktiven oder geplanten Projekte.'));
+  });
+
+  dash.draw('projekte-zu', (el) => {
+    const s = cc.state(el, ['projekte']);
+    if (!s.ok) return cc.fallback(el, s, 'Die Projekte');
+    const rows = dash.data('projekte').data.filter((p) => ['Abgeschlossen', 'Geparkt'].includes(p.status));
+    el.replaceChildren(...rows.map((p) => {
+      const li = cc.h('li', 'cc-task');
+      const meta = cc.h('div', 'cc-meta');
+      meta.append(cc.mark(cc.pill(p.status, cc.statusTone(p.status)), 'projekte', 'status', 'id=' + p.id), cc.h('span', 'cc-chip', p.bereich || ''));
+      li.append(cc.mark(cc.link(p.url, p.name, 'cc-task-title'), 'projekte', 'name', 'id=' + p.id), meta);
+      return li;
+    }));
+    if (!rows.length) el.replaceChildren(cc.emptyItem('Keine.'));
+  });
+</script>
+
+<script>
+  /* Content */
+  dash.draw('cstat', (el) => {
+    const s = cc.state(el, ['contentstatus']);
+    if (!s.ok) { el.textContent = '—'; return; }
+    const want = decodeURIComponent((el.dataset.where || '').split('=')[1] || '');
+    const row = dash.data('contentstatus').data.find((r) => r.status === want);
+    el.textContent = row ? cc.num(row.n) : '—';
+  });
+
+  dash.draw('redaktionsplan', (el) => {
+    const s = cc.state(el, ['content']);
+    if (!s.ok) return cc.fallback(el, s, 'Der Redaktionsplan');
+    const today = cc.today();
+    const rows = dash.data('content').data
+      .filter((c) => ['Geplant', 'In Produktion'].includes(c.status))
+      .sort((a, b) => (a.datum ? cc.day(a.datum) : '9999').localeCompare(b.datum ? cc.day(b.datum) : '9999'));
+    el.replaceChildren(...rows.map((c) => {
+      const tr = cc.h('tr');
+      tr.dataset.key = String(c.id);
+      const dt = cc.h('td', 'nowrap');
+      if (c.datum) {
+        const d = cc.diff(c.datum, today);
+        dt.append(cc.h('span', 'cc-due' + (d < 0 ? ' is-bad' : d <= 1 ? ' is-warn' : ''), cc.fmt(c.datum, true)));
+      } else {
+        dt.append(cc.h('span', 'is-unknown', 'ohne Datum'));
+      }
+      const title = cc.h('td', 'title');
+      title.append(cc.link(c.url, c.name));
+      const st = cc.h('td', 'nowrap'); st.append(cc.pill(c.status, cc.statusTone(c.status)));
+      const pr = cc.h('td', 'nowrap'); if (c.prio) pr.append(cc.pill(c.prio, cc.prioTone(c.prio === 'OPTIONAL' ? 'KANN' : c.prio)));
+      tr.append(dt, title, st, cc.h('td', 'nowrap', c.format || ''), cc.h('td', '', cc.list(c.kanal).join(', ')), cc.h('td', 'nowrap', c.ziel || ''), pr);
+      return tr;
+    }));
+    if (!rows.length) { const tr = cc.h('tr'); const td = cc.h('td', 'cc-empty', 'Nichts geplant.'); td.colSpan = 7; tr.append(td); el.replaceChildren(tr); }
+  });
+
+  dash.draw('ideen', (el) => {
+    const s = cc.state(el, ['content']);
+    if (!s.ok) return cc.fallback(el, s, 'Die Ideen');
+    const rows = dash.data('content').data.filter((c) => c.status === 'Idee');
+    el.replaceChildren(...rows.map((c) => {
+      const li = cc.h('li', 'cc-task');
+      const meta = cc.h('div', 'cc-meta');
+      [c.format, cc.list(c.kanal).join(', '), c.ziel].filter(Boolean).forEach((t) => meta.append(cc.h('span', 'cc-chip', t)));
+      li.append(cc.mark(cc.link(c.url, c.name, 'cc-task-title'), 'content', 'name', 'id=' + c.id), meta);
+      return li;
+    }));
+    if (!rows.length) el.replaceChildren(cc.emptyItem('Keine Ideen gespeichert.'));
+  });
+</script>
+
+<script>
+  /* Kennzahlen und Routinen */
+  dash.draw('kz-tabelle', (el) => {
+    const s = cc.state(el, ['kennzahlen']);
+    if (!s.ok) return cc.fallback(el, s, 'Die Kennzahlen');
+    const table = el.closest('table');
+    const fields = table ? [...table.querySelectorAll('thead th[data-field]')].map((th) => th.dataset.field) : [];
+    const eurFields = ['umsatz_gebucht', 'umsatz_realisiert'];
+    const tone = { 'Geprueft': 'tone-ok', 'Teilweise geprueft': 'tone-warn', 'Ungeprueft': 'tone-muted' };
+    const label = { 'Geprueft': 'geprüft', 'Teilweise geprueft': 'teilweise geprüft', 'Ungeprueft': 'ungeprüft' };
+    el.replaceChildren(...dash.data('kennzahlen').data.map((r) => {
+      const tr = cc.h('tr');
+      tr.dataset.key = String(r.stichtag || '');
+      fields.forEach((f) => {
+        const v = r[f];
+        if (f === 'zeitraum') { const td = cc.h('td', 'title'); td.append(cc.link(r.url, v || '')); tr.append(td); return; }
+        if (f === 'datenstatus') { const td = cc.h('td', 'nowrap'); if (v) td.append(cc.pill(label[v] || v, tone[v])); tr.append(td); return; }
+        const unknown = v == null || v === '';
+        tr.append(cc.h('td', 'num' + (unknown ? ' is-unknown' : ''), unknown ? 'k. A.' : (eurFields.includes(f) ? cc.eur(v) : cc.num(v))));
+      });
+      return tr;
+    }));
+  });
+
+  dash.draw('kz-notiz', (el) => {
+    const s = cc.state(el, ['kennzahlen']);
+    if (!s.ok) { el.replaceChildren('—'); return; }
+    const r = dash.data('kennzahlen').data[0];
+    const parts = String((r && r.notiz) || '').split(/\s+—\s+/).map((x) => x.trim()).filter(Boolean);
+    el.replaceChildren(...(parts.length ? parts.map((t) => cc.h('p', '', t)) : [cc.h('p', 'is-unknown', 'Keine Notiz.')]));
+  });
+
+  dash.draw('kz-text', (el) => {
+    const s = cc.state(el, ['kennzahlen']);
+    const r = s.ok ? dash.data('kennzahlen').data[0] : null;
+    el.textContent = (r && r[el.dataset.field]) || '—';
+  });
+
+  dash.draw('routinen', (el) => {
+    const s = cc.state(el, ['routinen']);
+    if (!s.ok) return cc.fallback(el, s, 'Die Routinen');
+    const order = { 'Läuft': 0, 'Geplant': 1, 'Pausiert': 2 };
+    const rows = [...dash.data('routinen').data].sort((a, b) => (order[a.status] ?? 3) - (order[b.status] ?? 3));
+    el.replaceChildren(...rows.map((r) => {
+      const w = 'id=' + r.id;
+      const li = cc.h('li', 'cc-card');
+      li.id = 'routine-' + r.id;
+      const meta = cc.h('div', 'cc-meta');
+      meta.append(cc.mark(cc.pill(r.status, cc.statusTone(r.status)), 'routinen', 'status', w));
+      if (r.rhythmus) meta.append(cc.mark(cc.h('span', 'cc-chip', r.rhythmus), 'routinen', 'rhythmus', w));
+      li.append(cc.mark(cc.link(r.url, r.name, 'cc-card-title'), 'routinen', 'name', w), meta);
+      if (r.naechste_aktion) li.append(cc.h('span', 'cc-label', 'Nächste Aktion'), cc.mark(cc.h('p', 'cc-next', r.naechste_aktion), 'routinen', 'naechste_aktion', w));
+      if (r.ergebnismass) li.append(cc.h('span', 'cc-label', 'Ergebnismaß'), cc.mark(cc.h('p', 'cc-next', r.ergebnismass), 'routinen', 'ergebnismass', w));
+      const foot = cc.h('div', 'cc-card-foot');
+      if (r.naechste) foot.append(cc.mark(cc.h('span', '', `nächste Durchführung ${cc.fmt(r.naechste, true)}`), 'routinen', 'naechste', w));
+      if (r.letzte) foot.append(cc.mark(cc.h('span', '', `zuletzt ${cc.fmt(r.letzte, true)}`), 'routinen', 'letzte', w));
+      if (foot.childNodes.length) li.append(foot);
+      return li;
+    }));
+    if (!rows.length) el.replaceChildren(cc.emptyItem('Keine Routinen.'));
+  });
+</script>
+
+<script>
+  /* Register: Umschalten, Link-Anker, Druck */
+  (() => {
+    const tabs = [...document.querySelectorAll('.cc-tab')];
+    const panels = () => [...document.querySelectorAll('.cc-panel')];
+    function show(id, remember) {
+      if (!panels().some((p) => p.id === id)) id = 'uebersicht';
+      panels().forEach((p) => { p.hidden = p.id !== id; });
+      tabs.forEach((t) => {
+        const on = t.dataset.tab === id;
+        t.setAttribute('aria-selected', on ? 'true' : 'false');
+        t.classList.toggle('is-active', on);
+        t.tabIndex = on ? 0 : -1;
+      });
+      if (remember) dash.setLink(id);
+    }
+    tabs.forEach((t, i) => {
+      t.addEventListener('click', () => show(t.dataset.tab, true));
+      t.addEventListener('keydown', (e) => {
+        if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+        const next = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
+        next.focus();
+        show(next.dataset.tab, true);
+      });
+    });
+    const start = (location.hash || '').slice(1);
+    if (start) show(start, false);
+
+    let before = null;
+    window.addEventListener('beforeprint', () => {
+      if (before) return;
+      before = panels().map((p) => [p, p.hidden]);
+      panels().forEach((p) => { p.hidden = false; });
+    });
+    window.addEventListener('afterprint', () => {
+      if (!before) return;
+      before.forEach(([p, h]) => { p.hidden = h; });
+      before = null;
+    });
+  })();
+</script>

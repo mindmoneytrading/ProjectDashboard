@@ -1,0 +1,22 @@
+{
+  "title": "Projekte (Notion)",
+  "description": "Alle nicht archivierten Projekte aus der Datenbank „Projekte“ im Control Centre.",
+  "link": "https://app.notion.com/p/63d45f7342aa40f6976aa78014ab5708",
+  "source": {
+    "kind": "call",
+    "connector": "Notion",
+    "tool": "notion-query-data-sources",
+    "args": {
+      "data": {
+        "mode": "sql",
+        "data_source_urls": [
+          "collection://5da8040d-bbd2-47b1-9eec-c39d3acca8d0"
+        ],
+        "query": "SELECT \"Projekt-ID\" AS id, \"Name\" AS name, \"Status\" AS status, \"Priorität\" AS prio, \"Bereich\" AS bereich, \"Entität\" AS entitaet, \"Zielbeitrag\" AS ziel, \"Blocker\" AS blocker, \"Nächster Meilenstein\" AS meilenstein, \"date:Deadline:start\" AS deadline, \"date:Letzter Fortschritt:start\" AS fortschritt, url FROM \"collection://5da8040d-bbd2-47b1-9eec-c39d3acca8d0\" WHERE \"Archiviert\" IS NULL OR \"Archiviert\" <> '__YES__' ORDER BY \"Bereich\", \"Projekt-ID\""
+      }
+    }
+  },
+  "langs": {
+    "query": "sql"
+  }
+}
