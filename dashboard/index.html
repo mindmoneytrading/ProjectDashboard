@@ -203,6 +203,41 @@
 
   .cc-foot { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin: 0; }
 
+  /* Bearbeiten */
+  .cc-actions { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs); padding-top: 2px; }
+  .cc-act {
+    font: inherit; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); cursor: pointer;
+    background: none; border: 1px solid var(--color-border-line); border-radius: 999px; padding: 1px 10px;
+  }
+  .cc-act:hover { color: var(--color-fg); border-color: var(--color-fg-muted); }
+  .cc-act:disabled { opacity: 0.5; cursor: default; }
+  .cc-btn.is-primary { background: var(--color-fg); color: var(--color-bg); border-color: var(--color-fg); }
+  .cc-btn.is-danger { color: var(--color-bad); }
+  .cc-btn:disabled { opacity: 0.55; cursor: default; }
+  .cc-msgs:empty { display: none; }
+  .cc-msg { margin: 0; font-size: var(--cds-font-size-caption); line-height: 1.45; }
+  .cc-msg.is-ok { color: var(--color-ok); }
+  .cc-msg.is-bad { color: var(--color-bad); }
+  .cc-msg.is-wait { color: var(--color-fg-muted); }
+  .cc-dialog {
+    width: min(560px, calc(100vw - 32px)); max-height: calc(100vh - 48px); overflow: auto;
+    background: var(--color-bg); color: var(--color-fg); border: 1px solid var(--color-border-line);
+    border-radius: var(--cds-radius); padding: var(--cds-pad-lg); box-shadow: var(--cds-shadow-popover);
+  }
+  .cc-dialog::backdrop { background: rgb(0 0 0 / 0.35); }
+  .cc-form { display: grid; gap: var(--cds-gap-md); }
+  .cc-form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); gap: var(--cds-gap-md); }
+  .cc-field { display: grid; gap: 4px; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); min-width: 0; }
+  .cc-input {
+    width: 100%; box-sizing: border-box; font: inherit; font-size: var(--cds-font-size-body); color: var(--color-fg);
+    background-color: var(--color-bg); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: 6px 10px;
+  }
+  textarea.cc-input { min-height: 4.5em; resize: vertical; line-height: 1.45; }
+  .cc-field .dash-select { width: 100%; }
+  .cc-check { display: flex; gap: 8px; align-items: center; font-size: var(--cds-font-size-caption); color: var(--color-fg); }
+  .cc-form-actions { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm); justify-content: space-between; align-items: center; }
+  .cc-form-actions > div { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm); }
+
   @media (prefers-reduced-motion: no-preference) {
     .cc-bar > span { transition: width var(--cds-dur-slow) var(--cds-ease-out); }
   }
@@ -268,13 +303,23 @@
     <button type="button" class="cc-tab" role="tab" id="tab-routinen" data-tab="routinen" aria-selected="false" aria-controls="routinen" tabindex="-1">Routinen</button>
   </nav>
 
+  <div class="cc-msgs" id="speicherstatus" role="status" aria-live="polite">
+    <p class="cc-msg is-wait" data-msg="saving" hidden>Wird in Notion gespeichert …</p>
+    <p class="cc-msg is-ok" data-msg="saved" hidden>In Notion gespeichert. Die Aufgaben werden neu geladen.</p>
+    <p class="cc-msg is-bad" data-msg="approval" hidden>Speichern braucht deine Freigabe für den Notion-Connector. Öffne das Dashboard in claude.ai und erlaube den Zugriff, wenn danach gefragt wird.</p>
+    <p class="cc-msg is-bad" data-msg="reconnect" hidden>Der Notion-Connector ist nicht verbunden oder abgelaufen. Verbinde Notion in claude.ai unter Einstellungen › Connectors neu.</p>
+    <p class="cc-msg is-bad" data-msg="nomcp" hidden>In dieser Ansicht kann das Dashboard nicht in Notion schreiben. Öffne es in claude.ai.</p>
+    <p class="cc-msg is-bad" data-msg="error" hidden>Notion hat die Änderung nicht übernommen: <span data-draw="save-detail"></span></p>
+  </div>
+
   <!-- Übersicht -->
   <section class="cc-panel" id="uebersicht" role="tabpanel" aria-labelledby="tab-uebersicht">
     <div class="cc-two">
       <div class="cc-block" id="fokus">
         <div class="cc-block-head">
           <h2 class="cc-h2">Fokus</h2>
-          <p class="cc-sub">Offene MUSS-Aufgaben und alles, was bis morgen fällig ist</p>
+          <button type="button" class="cc-btn" data-new-task>Neue Aufgabe</button>
+          <p class="cc-sub" style="flex-basis: 100%">Offene MUSS-Aufgaben und alles, was bis morgen fällig ist</p>
         </div>
         <ul class="cc-list dash-skeleton" data-draw="fokus" data-source="aufgaben"></ul>
       </div>
@@ -321,6 +366,7 @@
         <option value="KANN">KANN</option>
       </select>
       <button type="button" class="cc-btn" id="f-reset">Filter zurücksetzen</button>
+      <button type="button" class="cc-btn is-primary" data-new-task>Neue Aufgabe</button>
     </div>
     <div class="cc-board" id="board">
       <section class="cc-col" id="spalte-offen">
@@ -434,7 +480,86 @@
     <ul class="cc-grid cc-list dash-skeleton" data-draw="routinen" data-source="routinen"></ul>
   </section>
 
-  <p class="cc-foot">Daten live aus Notion (Control Centre). Titel öffnen die Seite in Notion; Änderungen dort erscheinen hier beim nächsten Laden.</p>
+  <p class="cc-foot">Daten live aus Notion (Control Centre). Titel öffnen die Seite in Notion; Änderungen dort erscheinen hier beim nächsten Laden. Aufgaben, die du hier bearbeitest, werden direkt in Notion gespeichert.</p>
+
+  <template id="tpl-aufgabe-aktionen">
+    <div class="cc-actions">
+      <button type="button" class="cc-act" data-act="edit">Bearbeiten</button>
+      <button type="button" class="cc-act" data-act="done">Erledigt</button>
+    </div>
+  </template>
+
+  <dialog class="cc-dialog" id="aufgabe-dialog" aria-label="Aufgabe bearbeiten">
+    <form class="cc-form" id="aufgabe-form" novalidate>
+      <h2 class="cc-h2" data-mode="edit">Aufgabe bearbeiten</h2>
+      <h2 class="cc-h2" data-mode="new" hidden>Neue Aufgabe</h2>
+      <label class="cc-field" for="fld-name">Titel
+        <input class="cc-input" id="fld-name" type="text" required maxlength="300" autocomplete="off">
+      </label>
+      <div class="cc-form-grid">
+        <label class="cc-field" for="fld-status">Status
+          <select class="dash-select" id="fld-status">
+            <option value="Offen">Offen</option>
+            <option value="In Arbeit">In Arbeit</option>
+            <option value="Blockiert">Blockiert</option>
+            <option value="Erledigt">Erledigt</option>
+            <option value="Geparkt">Geparkt</option>
+          </select>
+        </label>
+        <label class="cc-field" for="fld-prio">Priorität
+          <select class="dash-select" id="fld-prio">
+            <option value="">keine</option>
+            <option value="MUSS">MUSS</option>
+            <option value="SOLL">SOLL</option>
+            <option value="KANN">KANN</option>
+          </select>
+        </label>
+        <label class="cc-field" for="fld-deadline">Deadline
+          <input class="cc-input" id="fld-deadline" type="date" min="2020-01-01" max="2035-12-31">
+        </label>
+        <label class="cc-field" for="fld-entitaet">Entität
+          <select class="dash-select" id="fld-entitaet">
+            <option value="">keine</option>
+            <option value="MMT UG">MMT UG</option>
+            <option value="Persönliche Marke">Persönliche Marke</option>
+            <option value="Side-Projects">Side-Projects</option>
+          </select>
+        </label>
+      </div>
+      <label class="cc-field" for="fld-projekt">Projekt
+        <select class="dash-select" id="fld-projekt" data-draw="projekt-optionen" data-source="projekte"></select>
+      </label>
+      <label class="cc-field" for="fld-next">Nächster Schritt
+        <textarea class="cc-input" id="fld-next" rows="3"></textarea>
+      </label>
+      <label class="cc-field" for="fld-fertig">Fertigkriterium
+        <textarea class="cc-input" id="fld-fertig" rows="2"></textarea>
+      </label>
+      <label class="cc-check" for="fld-fortschritt"><input type="checkbox" id="fld-fortschritt"> „Letzter Fortschritt“ auf heute setzen</label>
+      <p class="cc-msg is-bad" data-msg="noname" hidden>Bitte einen Titel eingeben.</p>
+      <p class="cc-msg is-bad" data-msg="baddate" hidden>Das Datum ist unvollständig.</p>
+      <div class="cc-msgs" role="status" aria-live="polite">
+        <p class="cc-msg is-wait" data-msg="saving" hidden>Wird in Notion gespeichert …</p>
+        <p class="cc-msg is-ok" data-msg="saved" hidden>In Notion gespeichert.</p>
+        <p class="cc-msg is-bad" data-msg="approval" hidden>Speichern braucht deine Freigabe für den Notion-Connector. Erlaube den Zugriff, wenn claude.ai danach fragt, und speichere erneut.</p>
+        <p class="cc-msg is-bad" data-msg="reconnect" hidden>Der Notion-Connector ist nicht verbunden oder abgelaufen. Verbinde Notion in claude.ai unter Einstellungen › Connectors neu.</p>
+        <p class="cc-msg is-bad" data-msg="nomcp" hidden>In dieser Ansicht kann das Dashboard nicht in Notion schreiben. Öffne es in claude.ai.</p>
+        <p class="cc-msg is-bad" data-msg="error" hidden>Notion hat die Änderung nicht übernommen: <span data-draw="save-detail"></span></p>
+        <p class="cc-msg is-wait" data-msg="unchanged" hidden>Nichts geändert.</p>
+      </div>
+      <div class="cc-form-actions">
+        <div>
+          <button type="submit" class="cc-btn is-primary" id="dlg-save">Speichern</button>
+          <button type="button" class="cc-btn" id="dlg-cancel">Abbrechen</button>
+        </div>
+        <div data-mode="edit">
+          <button type="button" class="cc-btn is-danger" id="dlg-archive">Archivieren</button>
+          <button type="button" class="cc-btn is-danger" id="dlg-archive-yes" hidden>Ja, archivieren</button>
+          <button type="button" class="cc-btn" id="dlg-archive-no" hidden>Nicht archivieren</button>
+        </div>
+      </div>
+    </form>
+  </dialog>
 </div>
 
 <script>
@@ -555,6 +680,16 @@
       li.append(title, meta);
       if (r.naechster_schritt && opt.next !== false) {
         li.append(mark(h('p', 'cc-next', r.naechster_schritt), 'aufgaben', 'naechster_schritt', 'id=' + r.id));
+      }
+      const tpl = document.getElementById('tpl-aufgabe-aktionen');
+      if (tpl && tpl.content && window.ccEdit) {
+        const actions = tpl.content.cloneNode(true);
+        actions.querySelectorAll('[data-act]').forEach((b) => {
+          const act = b.getAttribute('data-act');
+          if (act === 'done' && !isOpen(r)) b.hidden = true;
+          b.addEventListener('click', () => (act === 'done' ? window.ccEdit.quickDone(r, b) : window.ccEdit.open(r)));
+        });
+        li.append(actions);
       }
       return li;
     }
@@ -1195,6 +1330,202 @@
     }));
     if (!rows.length) el.replaceChildren(cc.emptyItem('Keine Routinen.'));
   });
+</script>
+
+<script>
+  /* Aufgaben bearbeiten: schreibt auf Knopfdruck über den Notion-Connector des Betrachters */
+  window.ccEdit = (() => {
+    const DATA_SOURCE = 'e7c61ee2-5e31-4a18-9fee-64fbf2c36764';
+    const st = { mode: 'edit', row: null, projekt: '', detail: '', busy: false };
+    const byId = (id) => document.getElementById(id);
+    const pageId = (u) => ((String(u || '').match(/[0-9a-f]{32}/i) || [''])[0]).toLowerCase();
+    const dlg = () => byId('aufgabe-dialog');
+    const form = () => byId('aufgabe-form');
+    let barTimer = 0;
+
+    function setMsg(scope, key) {
+      if (!scope) return;
+      scope.querySelectorAll('[data-msg]').forEach((p) => { p.hidden = p.getAttribute('data-msg') !== key; });
+    }
+    function bar(key, autoHide) {
+      clearTimeout(barTimer);
+      setMsg(byId('speicherstatus'), key);
+      if (autoHide) barTimer = setTimeout(() => setMsg(byId('speicherstatus'), ''), 6000);
+    }
+
+    dash.draw('save-detail', (el) => { el.textContent = st.detail || 'unbekannter Fehler'; });
+
+    function projectsAll() { const d = dash.data('projekte'); return d.status === 'ok' ? d.data : []; }
+    function currentProject(row) {
+      const ids = cc.list(row && row.projekt_urls).map(pageId).filter(Boolean);
+      if (!ids.length) return '';
+      const p = projectsAll().find((x) => ids.includes(pageId(x.url)));
+      return p ? p.url : 'https://www.notion.so/' + ids[0];
+    }
+
+    dash.draw('projekt-optionen', (sel) => {
+      const all = projectsAll();
+      const choose = all.filter((p) => p.status !== 'Abgeschlossen' || pageId(p.url) === pageId(st.projekt));
+      const opts = [new Option('kein Projekt', ''), ...choose.map((p) => new Option(p.name || 'ohne Titel', p.url))];
+      if (st.projekt && !choose.some((p) => pageId(p.url) === pageId(st.projekt))) opts.push(new Option('verknüpftes Projekt', st.projekt));
+      sel.replaceChildren(...opts);
+      sel.value = st.projekt;
+      sel.onchange = () => { st.projekt = sel.value; };
+    });
+
+    function setBusy(on) {
+      st.busy = on;
+      ['dlg-save', 'dlg-archive', 'dlg-archive-yes'].forEach((id) => { const b = byId(id); if (b) b.disabled = on; });
+    }
+
+    function open(row) {
+      const d = dlg(), f = form();
+      if (!d || !f) return;
+      st.mode = row ? 'edit' : 'new';
+      st.row = row || null;
+      const p = dash.params() || {};
+      f.querySelectorAll('[data-mode]').forEach((x) => { x.hidden = x.getAttribute('data-mode') !== st.mode; });
+      const set = (id, v) => { const el = byId(id); if (el) el.value = v; };
+      set('fld-name', row ? row.name || '' : '');
+      set('fld-status', row ? row.status || 'Offen' : 'Offen');
+      set('fld-prio', row ? row.prio || '' : p.prio || '');
+      set('fld-deadline', row && row.deadline ? cc.day(row.deadline) : '');
+      set('fld-entitaet', row ? row.entitaet || '' : p.entitaet || '');
+      set('fld-next', row ? row.naechster_schritt || '' : '');
+      set('fld-fertig', row ? row.fertig || '' : '');
+      const fc = byId('fld-fortschritt'); if (fc) fc.checked = false;
+      st.projekt = row ? currentProject(row) : '';
+      dash.draw('projekt-optionen');
+      ['dlg-archive-yes', 'dlg-archive-no'].forEach((id) => { const b = byId(id); if (b) b.hidden = true; });
+      const a = byId('dlg-archive'); if (a) a.hidden = false;
+      setMsg(f, '');
+      setBusy(false);
+      if (typeof d.showModal === 'function') { if (!d.open) d.showModal(); } else d.setAttribute('open', '');
+      const n = byId('fld-name'); if (n) n.focus();
+    }
+    function close() { const d = dlg(); if (!d) return; if (typeof d.close === 'function') d.close(); else d.removeAttribute('open'); }
+
+    function collect() {
+      const f = form();
+      const val = (id) => { const el = byId(id); return el ? String(el.value || '').trim() : ''; };
+      const name = val('fld-name');
+      if (!name) { setMsg(f, 'noname'); return null; }
+      const dEl = byId('fld-deadline');
+      const dl = val('fld-deadline');
+      if (dl && (!/^\d{4}-\d{2}-\d{2}$/.test(dl) || (dEl && dEl.validity && !dEl.validity.valid))) { setMsg(f, 'baddate'); return null; }
+      const o = st.row || {};
+      const isNew = st.mode === 'new';
+      const props = {};
+      const text = (key, now, before) => { if (isNew ? now : now !== (before || '')) props[key] = now || null; };
+      text('Name', name, o.name);
+      const status = val('fld-status') || 'Offen';
+      if (isNew || status !== (o.status || '')) props['Status'] = status;
+      text('Priorität', val('fld-prio'), o.prio);
+      text('Entität', val('fld-entitaet'), o.entitaet);
+      text('Nächster Schritt', val('fld-next'), o.naechster_schritt);
+      text('Fertigkriterium', val('fld-fertig'), o.fertig);
+      if (isNew ? dl : dl !== (o.deadline ? cc.day(o.deadline) : '')) {
+        props['date:Deadline:start'] = dl || null;
+        if (dl) props['date:Deadline:is_datetime'] = 0;
+      }
+      const before = isNew ? '' : currentProject(o);
+      if (pageId(st.projekt) !== pageId(before)) {
+        props['Projekt-Verknuepfung'] = st.projekt ? [st.projekt] : null;
+        const p = projectsAll().find((x) => pageId(x.url) === pageId(st.projekt));
+        if (p && !o.projekt) props['Projekt'] = p.name;
+      }
+      const fc = byId('fld-fortschritt');
+      if (fc && fc.checked) { props['date:Letzter Fortschritt:start'] = cc.today(); props['date:Letzter Fortschritt:is_datetime'] = 0; }
+      if (isNew) props['Archiviert'] = '__NO__';
+      return props;
+    }
+
+    function errKey(e) {
+      const c = e && e.code;
+      if (['approval_required', 'not_granted', 'not_in_manifest', 'consent_required'].includes(c)) return 'approval';
+      if (['needs_reauth', 'server_not_connected', 'selection_required', 'server_not_found'].includes(c)) return 'reconnect';
+      if (['capability_disabled', 'capability_removed'].includes(c)) return 'nomcp';
+      return 'error';
+    }
+
+    async function write(mode, row, props) {
+      const mcp = await claude.use('mcp');
+      if (!mcp) return { key: 'nomcp' };
+      try {
+        if (mode === 'edit') {
+          await mcp.callTool('Notion', 'notion-update-page', { page_id: row.url, command: 'update_properties', properties: props, allow_async: false });
+        } else {
+          await mcp.callTool('Notion', 'notion-create-pages', { parent: { data_source_id: DATA_SOURCE }, pages: [{ properties: props }], allow_async: false });
+        }
+        return { key: 'saved' };
+      } catch (e) {
+        const key = errKey(e);
+        if (key === 'error') {
+          let m = String((e && e.message) || (e && e.code) || '');
+          try { const j = JSON.parse(m); m = (j && (j.message || (j.error && j.error.message))) || m; } catch { /* Text bleibt */ }
+          st.detail = `${m.slice(0, 300)}${e && e.code ? ` (${e.code})` : ''}`;
+          dash.draw('save-detail');
+        }
+        return { key };
+      }
+    }
+
+    function afterSave() {
+      dash.refresh('aufgaben');
+      setTimeout(() => dash.refresh('aufgaben'), 3000);
+    }
+
+    async function submit(extra) {
+      if (st.busy) return;
+      const f = form();
+      const props = extra || collect();
+      if (!props) return;
+      if (!Object.keys(props).length) { setMsg(f, 'unchanged'); return; }
+      setBusy(true);
+      setMsg(f, 'saving');
+      const res = await write(st.mode, st.row, props);
+      setBusy(false);
+      setMsg(f, res.key);
+      if (res.key === 'saved') {
+        bar('saved', true);
+        afterSave();
+        setTimeout(close, 700);
+      }
+    }
+
+    async function quickDone(row, btn) {
+      if (!row || !row.url) return;
+      if (btn) btn.disabled = true;
+      bar('saving');
+      const res = await write('edit', row, {
+        'Status': 'Erledigt', 'date:Letzter Fortschritt:start': cc.today(), 'date:Letzter Fortschritt:is_datetime': 0
+      });
+      bar(res.key, res.key === 'saved');
+      if (res.key === 'saved') afterSave();
+      else if (btn) btn.disabled = false;
+    }
+
+    document.querySelectorAll('#aufgabe-form').forEach((f) => f.addEventListener('submit', (e) => { e.preventDefault(); submit(); }));
+    document.querySelectorAll('#dlg-cancel').forEach((b) => b.addEventListener('click', close));
+    document.querySelectorAll('#fld-status').forEach((s) => s.addEventListener('change', () => {
+      const fc = byId('fld-fortschritt');
+      if (fc && st.mode === 'edit' && st.row && s.value !== st.row.status) fc.checked = true;
+    }));
+    document.querySelectorAll('#dlg-archive').forEach((b) => b.addEventListener('click', () => {
+      b.hidden = true;
+      ['dlg-archive-yes', 'dlg-archive-no'].forEach((id) => { const x = byId(id); if (x) x.hidden = false; });
+    }));
+    document.querySelectorAll('#dlg-archive-no').forEach((b) => b.addEventListener('click', () => {
+      ['dlg-archive-yes', 'dlg-archive-no'].forEach((id) => { const x = byId(id); if (x) x.hidden = true; });
+      const a = byId('dlg-archive'); if (a) a.hidden = false;
+    }));
+    document.querySelectorAll('#dlg-archive-yes').forEach((b) => b.addEventListener('click', () => {
+      if (st.mode === 'edit' && st.row) submit({ 'Archiviert': '__YES__' });
+    }));
+    document.querySelectorAll('[data-new-task]').forEach((b) => b.addEventListener('click', () => open(null)));
+
+    return { open, quickDone };
+  })();
 </script>
 
 <script>

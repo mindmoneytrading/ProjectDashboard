@@ -21,11 +21,17 @@ Die Abfragen nutzen gespeicherte **Notion-Ansichten** (View-Modus), nicht SQL: S
 | Register | Inhalt |
 | --- | --- |
 | Übersicht | Lage-Satz, Kennzahlen-Leiste, Fokusliste (MUSS und bis morgen fällig), Projektfortschritt, Zeitleiste der letzten 7 und nächsten 14 Tage |
-| Aufgaben | Kanban nach Status mit Suche und Filtern (Entität, Priorität), geparkte Aufgaben eingeklappt |
+| Aufgaben | Kanban nach Status mit Suche und Filtern (Entität, Priorität), geparkte Aufgaben eingeklappt. Aufgaben sind bearbeitbar (siehe unten) |
 | Projekte | Aktive, geplante und blockierte Projekte nach Bereich: Fortschritt, Meilenstein, Blocker, „ohne Fortschritt seit X Tagen“ |
 | Content | Pipeline nach Status, Redaktionsplan, Ideenspeicher |
 | Kennzahlen | Wochentabelle; leere Felder erscheinen als „k. A.“ (unbekannt, nicht null) |
 | Routinen | Wiederkehrende Abläufe mit Rhythmus und nächster Aktion |
+
+## Aufgaben bearbeiten
+
+Jede Aufgabenkarte hat „Bearbeiten“ und „Erledigt“, dazu gibt es „Neue Aufgabe“ in Übersicht und Aufgaben. Gespeichert wird direkt in Notion über den Notion-Connector der Person, die das Dashboard geöffnet hat (`notion-update-page`, `notion-create-pages`), und nur auf Knopfdruck. Beim Bearbeiten werden nur geänderte Felder gesendet. „Archivieren“ setzt das Feld „Archiviert“ nach einer Rückfrage; nichts wird gelöscht.
+
+Bearbeitbar: Titel, Status, Priorität, Deadline, Entität, Projekt (Projekt-Verknüpfung), Nächster Schritt, Fertigkriterium und optional „Letzter Fortschritt“ = heute (bei Statuswechsel vorausgewählt).
 
 ## Aufbau
 
